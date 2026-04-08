@@ -2,10 +2,12 @@ package com.femcoders.tico;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 @SpringBootApplication
+@EnableJpaAuditing
 public class TicoApplication {
 
 	public static void main(String[] args) {
