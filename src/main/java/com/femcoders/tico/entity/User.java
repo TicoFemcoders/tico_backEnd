@@ -1,4 +1,4 @@
-package com.femcoders.tico;
+package com.femcoders.tico.entity;
 
 import java.time.LocalDateTime;
 
