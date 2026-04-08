@@ -58,7 +58,7 @@ public class Tickets {
     private LocalDateTime closedAt;
 
     /** Asunto fijo del hilo de email: "[TICO-{id}] {title}" */
-    @Column(name = "email_subject", length = 255)
+    @Column(name = "email_subject", length = 255) //se puede ampliar/reducir sin problemas
     private String emailSubject;
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
