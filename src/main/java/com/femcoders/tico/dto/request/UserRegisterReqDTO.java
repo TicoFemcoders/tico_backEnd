@@ -1,5 +1,7 @@
 package com.femcoders.tico.dto.request;
 
+import java.util.Set;
+
 import com.femcoders.tico.enums.UserRole;
 
 import jakarta.validation.constraints.Email;
@@ -21,9 +23,8 @@ String email,
 @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
 String password,
 
-@NotNull(message = "Se requiere rol")
-UserRole role
-
+@NotNull(message = "Se requiere al menos un rol")
+Set<String> roles
 
 ) {
 
