@@ -1,6 +1,8 @@
 package com.femcoders.tico.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -17,6 +19,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
@@ -66,8 +70,16 @@ public class Tickets {
     private LocalDateTime closedAt;
 
     /** Asunto fijo del hilo de email: "[TICO-{id}] {title}" */
-    @Column(name = "email_subject", length = 255) // No se setea manualmente, se genera tras persistir el ticket. Se puede ampliar/reducir si se necesitan más detalles en el asunto.
+    @Column(name = "email_subject", length = 255)
     private String emailSubject;
+
+    @ManyToMany
+    @JoinTable(
+        name = "ticket_labels",
+        joinColumns = @JoinColumn(name = "ticket_id"),
+        inverseJoinColumns = @JoinColumn(name = "label_id")
+    )
+    private Set<Label> labels = new HashSet<>();
 
     /** Se ejecuta tras el primer save() para generar el asunto del hilo de email */
     @PostPersist
@@ -109,4 +121,7 @@ public class Tickets {
 
     public String getEmailSubject() { return emailSubject; }
     public void setEmailSubject(String emailSubject) { this.emailSubject = emailSubject; }
+
+    public Set<Label> getLabels() { return labels; }
+    public void setLabels(Set<Label> labels) { this.labels = labels; }
 }
