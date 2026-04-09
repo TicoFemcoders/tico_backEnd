@@ -11,7 +11,6 @@ import java.util.UUID;
 
 
 
-
 @Entity
 @Table(name = "ticket_message")
 @Data
