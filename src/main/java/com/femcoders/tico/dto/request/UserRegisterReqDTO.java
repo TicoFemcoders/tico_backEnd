@@ -9,19 +9,19 @@ import jakarta.validation.constraints.Size;
 
 public record UserRegisterReqDTO(
 
-@NotBlank(message = "name is required")
+@NotBlank(message = "Se requiere el nombre")
 @Size(min = 2, max = 30 )
 String name,
 
-@NotBlank(message = "Email is required ")
-@Email(message = "Invalid email format")
+@NotBlank(message = "Se requiere correo electrónico ")
+@Email(message = "Formato de correo electrónico no válido")
 String email,
 
-@NotBlank(message = "Password is required")
-@Size(min = 8, message = "Password must be 8 characters long")
+@NotBlank(message = "Se requiere contraseña")
+@Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
 String password,
 
-@NotNull(message = "Rol is required")
+@NotNull(message = "Se requiere rol")
 UserRole role
 
 
