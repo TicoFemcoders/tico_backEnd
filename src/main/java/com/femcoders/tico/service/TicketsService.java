@@ -1,5 +1,28 @@
 package com.femcoders.tico.service;
 
-public class TicketsService {
-    
+import java.util.List;
+
+import com.femcoders.tico.dto.request.TicketCreateReqDTO;
+import com.femcoders.tico.dto.response.TicketsResponseDTO;
+import com.femcoders.tico.enums.TicketPriority;
+
+public interface TicketsService {
+
+    TicketsResponseDTO createTicket(TicketCreateReqDTO dto, Long userId);
+
+    List<TicketsResponseDTO> getAllTickets();
+
+    List<TicketsResponseDTO> getTicketsByUser(Long userId);
+
+    List<TicketsResponseDTO> getTicketsByAdmin(Long adminId);
+
+    TicketsResponseDTO assignAdmin(Long ticketId, Long adminId);
+
+    TicketsResponseDTO assignLabel(Long ticketId, Long labelId);
+
+    TicketsResponseDTO removeLabel(Long ticketId, Long labelId);
+
+    TicketsResponseDTO changePriority(Long ticketId, TicketPriority priority);
+
+    TicketsResponseDTO closeTicket(Long ticketId);
 }
