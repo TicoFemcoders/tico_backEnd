@@ -1,26 +1,38 @@
 package com.femcoders.tico.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
-
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "tickets")
 public class Tickets {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    private Long id;
 
     @Column(name = "title", nullable = false, length = 255)
     private String title;
@@ -58,22 +70,16 @@ public class Tickets {
     private LocalDateTime closedAt;
 
     /** Asunto fijo del hilo de email: "[TICO-{id}] {title}" */
-    @Column(name = "email_subject", length = 255) //se puede ampliar/reducir sin problemas
+    @Column(name = "email_subject", length = 255)
     private String emailSubject;
-
-    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TicketMensaje> messages;
 
     @ManyToMany
     @JoinTable(
-        name = "ticket_etiquetas",
+        name = "ticket_labels",
         joinColumns = @JoinColumn(name = "ticket_id"),
         inverseJoinColumns = @JoinColumn(name = "label_id")
     )
-    private Set<Etiqueta> labels = new HashSet<>();
-
-    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EmailNotificacion> emailNotifications;
+    private Set<Label> labels = new HashSet<>();
 
     /** Se ejecuta tras el primer save() para generar el asunto del hilo de email */
     @PostPersist
@@ -86,7 +92,7 @@ public class Tickets {
         this.closedAt = LocalDateTime.now();
     }
 
-    public UUID getId() { return id; }
+    public Long getId() { return id; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -116,12 +122,6 @@ public class Tickets {
     public String getEmailSubject() { return emailSubject; }
     public void setEmailSubject(String emailSubject) { this.emailSubject = emailSubject; }
 
-    public List<TicketMensaje> getMessages() { return messages; }
-    public void setMessages(List<TicketMensaje> messages) { this.messages = messages; }
-
-    public Set<Etiqueta> getLabels() { return labels; }
-    public void setLabels(Set<Etiqueta> labels) { this.labels = labels; }
-
-    public List<EmailNotificacion> getEmailNotifications() { return emailNotifications; }
-    public void setEmailNotifications(List<EmailNotificacion> n) { this.emailNotifications = n; }
+    public Set<Label> getLabels() { return labels; }
+    public void setLabels(Set<Label> labels) { this.labels = labels; }
 }
