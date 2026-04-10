@@ -46,7 +46,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
       return authenticationManager.authenticate(authentication);
 
     } catch (IOException e) {
-      throw new AuthenticationServiceException("Erreur de lecture des identifiants", e);
+      throw new AuthenticationServiceException("Error de lectura al identificar", e);
     }
   }
 
@@ -73,8 +73,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     AuthResponse authResponse = new AuthResponse(
         userDetail.getUser().getId(),
-        userDetail.getUser().getEmail(),
         userDetail.getUser().getName(),
+        userDetail.getUser().getEmail(),
         roles);
 
     response.addHeader("Authorization", "Bearer " + token);

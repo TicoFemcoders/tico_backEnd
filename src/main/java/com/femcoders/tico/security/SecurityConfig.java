@@ -25,7 +25,7 @@ public class SecurityConfig {
   private final CorsConfigurationSource corsConfigurationSource;
   private final JwtTokenService jwtTokenService;
 
-  @Value("${jwt.secret}")
+  @Value("${JWT_SECRET}")
   private String jwtSecret;
 
   public SecurityConfig(CustomAuthenticationManager customAuthenticationManager,
@@ -41,19 +41,21 @@ public class SecurityConfig {
 
     JWTAuthenticationFilter authenticationFilter = new JWTAuthenticationFilter(
         customAuthenticationManager, jwtTokenService);
-    authenticationFilter.setFilterProcessesUrl("/api/auth/login");
+    authenticationFilter.setFilterProcessesUrl("/login");
 
     http
         .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+            .requestMatchers("/login").permitAll()
             .requestMatchers("/error").permitAll()
-            .requestMatchers("/api/quotes/**").hasAnyRole("EMPLOYEE")
-            .requestMatchers("/api/users/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.GET, "/api/agency").authenticated()
-            .requestMatchers("/api/agency/**").hasRole("ADMIN")
-            .requestMatchers("/api/uploads/**").authenticated()
+            // .requestMatchers("/api/**").hasAnyRole("EMPLOYEE")
+            // .requestMatchers("/api/**").hasRole("ADMIN")
+            // .requestMatchers(HttpMethod.GET, "/api").authenticated()
+            // .requestMatchers("/api/**").hasRole("ADMIN")
+            // .requestMatchers("/api/**").authenticated()
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             .anyRequest().authenticated())
         .addFilter(authenticationFilter)
         .addFilterAfter(
@@ -63,7 +65,7 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((request, response, authException) ->
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")));
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autorizado")));
 
     return http.build();
   }

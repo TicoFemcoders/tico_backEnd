@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
+  @Value("${JWT_SECRET}")
   private final String jwtSecret;
 
   public JWTAuthorizationFilter(AuthenticationManager authenticationManager, String jwtSecret) {
@@ -65,7 +67,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
       chain.doFilter(request, response);
 
     } catch (JWTVerificationException e) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token invalide ou expiré");
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no válido o expirado");
     }
   }
 

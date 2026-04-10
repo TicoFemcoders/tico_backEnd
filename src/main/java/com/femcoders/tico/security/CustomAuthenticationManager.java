@@ -5,8 +5,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.femcoders.tico.service.UserService;
@@ -15,9 +14,9 @@ import com.femcoders.tico.service.UserService;
 public class CustomAuthenticationManager implements AuthenticationManager {
 
   private final UserService userService;
-  private final BCryptPasswordEncoder passwordEncoder;
+  private final PasswordEncoder passwordEncoder;
 
-  public CustomAuthenticationManager(UserService userservice, BCryptPasswordEncoder passwordEncoder) {
+  public CustomAuthenticationManager(UserService userservice, PasswordEncoder passwordEncoder) {
     this.userService = userservice;
     this.passwordEncoder = passwordEncoder;
   }
