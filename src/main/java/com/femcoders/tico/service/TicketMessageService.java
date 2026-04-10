@@ -19,7 +19,7 @@ public class TicketMessageService {
         return ticketMessageRepository.findByTicketId(ticketId);
     }
 
-    public TicketMessage creatMessage(TicketMessage message) {
+    public TicketMessage createMessage(TicketMessage message) {
         return ticketMessageRepository.save(message);
     }
 
