@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.service.TicketMessageService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/tickets/{ticketId}/messages")
 public class TicketMessageController {
@@ -35,7 +37,7 @@ public class TicketMessageController {
     @PostMapping
     public ResponseEntity<TicketMessage> createMessage(
             @PathVariable UUID ticketId,
-            @RequestBody TicketMessage message) {
+           @Valid @RequestBody TicketMessage message) {
         message.setTicketId(ticketId);
         TicketMessage saved = ticketMessageService.createMessage(message);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
