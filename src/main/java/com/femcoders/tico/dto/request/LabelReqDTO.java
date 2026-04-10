@@ -1,0 +1,21 @@
+package com.femcoders.tico.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public record LabelReqDTO(
+
+    @NotBlank(message = "Se requiere el nombre")
+    @Size(min = 2, max = 100)
+    String name,
+
+    @NotBlank(message = "Se requiere color")
+    @Pattern(
+        regexp = "^#[A-Fa-f0-9]{6}$", 
+        message = "El color debe tener un formato hexadecimal válido (ejemplo: #FF5733)"
+    )
+    String color
+) {
+
+}
