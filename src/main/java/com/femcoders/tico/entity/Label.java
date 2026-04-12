@@ -14,14 +14,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Table(name = "labels")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Label {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "name", nullable = false, unique = true, length = 100)

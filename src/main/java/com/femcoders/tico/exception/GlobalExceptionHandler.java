@@ -34,7 +34,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotFound(
             ResourceNotFoundException ex) {
 
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+       String mensaje = String.format("%s no encontrado/a con %s: '%s'", 
+            ex.getResourceName(), 
+            ex.getFieldName(), 
+            ex.getFieldValue());
+
+    return buildResponse(HttpStatus.NOT_FOUND, mensaje, null);
+
     }
 
     /** Acción no permitida: cerrar un ticket ya cerrado, asignar una etiqueta ya asignada */
