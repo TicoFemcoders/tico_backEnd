@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.TicketMessageRequestDTO;
-import com.femcoders.tico.dto.TicketMessageResponseDTO;
+import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
+import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
 import com.femcoders.tico.service.TicketMessageService;
 
 import jakarta.validation.Valid;
