@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,6 +18,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /** Campos del formulario incorrectos al crear o actualizar un ticket */
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -34,7 +38,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotFound(
             ResourceNotFoundException ex) {
 
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+        log.warn("Recurso no encontrado: {}", ex.getMessage());
+
+        String mensaje = String.format("%s no encontrado/a con %s: '%s'",
+                ex.getResourceName(),
+                ex.getFieldName(),
+                ex.getFieldValue());
+
+        return buildResponse(HttpStatus.NOT_FOUND, mensaje, null);
     }
 
     /** Acción no permitida: cerrar un ticket ya cerrado, asignar una etiqueta ya asignada */
@@ -84,6 +95,7 @@ public class GlobalExceptionHandler {
     /** Error inesperado del servidor */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
+        log.error("Error inesperado en la aplicación: ", ex);
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ha ocurrido un error inesperado. Contacta con el administrador del sistema", null);
     }
