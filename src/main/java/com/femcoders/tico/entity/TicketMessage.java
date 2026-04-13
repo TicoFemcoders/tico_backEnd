@@ -1,7 +1,6 @@
 package com.femcoders.tico.entity;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,15 +24,15 @@ public class TicketMessage {
 
 
    @Id
-   @GeneratedValue(strategy = GenerationType.UUID)
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    @Column(name = "id")
-   private UUID id;
+   private Long id;
 
    @Column(name = "ticket_id", nullable = false)
-   private UUID ticketId;
+   private Long ticketId;
 
    @Column(name = "author_id", nullable = false)
-   private UUID authorId;
+   private Long authorId;
 
    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
    private String content;
