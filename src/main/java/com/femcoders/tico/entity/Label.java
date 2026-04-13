@@ -14,10 +14,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "labels")
+@Data
+@NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Label {
 
@@ -43,19 +47,4 @@ public class Label {
 
     @ManyToMany(mappedBy = "labels")
     private Set<Tickets> tickets = new HashSet<>();
-
-    public Long getId() { return id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getColor() { return color; }
-    public void setColor(String color) { this.color = color; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-
-    public Set<Tickets> getTickets() { return tickets; }
-    public void setTickets(Set<Tickets> tickets) { this.tickets = tickets; }
 }

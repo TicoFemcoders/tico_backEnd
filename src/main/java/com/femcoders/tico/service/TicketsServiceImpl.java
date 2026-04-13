@@ -11,6 +11,7 @@ import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Tickets;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
+import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketsMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -35,7 +36,7 @@ public class TicketsServiceImpl implements TicketsService {
     @Override
     public TicketsResponseDTO createTicket(TicketCreateReqDTO dto, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         Tickets ticket = ticketsMapper.toEntity(dto);
         ticket.setCreatedBy(user);
@@ -54,6 +55,9 @@ public class TicketsServiceImpl implements TicketsService {
 
     @Override
     public List<TicketsResponseDTO> getTicketsByUser(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
         return ticketsRepository.findByCreatedById(userId)
                 .stream()
                 .map(ticketsMapper::toResponseDTO)
@@ -62,7 +66,7 @@ public class TicketsServiceImpl implements TicketsService {
 
     @Override
     public List<TicketsResponseDTO> getTicketsByAdmin(Long adminId) {
-        return ticketsRepository.findByAssignedToId(adminId)
+        return ticketsRepository.findByAssignedToIdAndStatusNot(adminId, TicketStatus.CLOSED)
                 .stream()
                 .map(ticketsMapper::toResponseDTO)
                 .toList();
@@ -71,10 +75,10 @@ public class TicketsServiceImpl implements TicketsService {
     @Override
     public TicketsResponseDTO assignAdmin(Long ticketId, Long adminId) {
         Tickets ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
         User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", adminId));
 
         ticket.setAssignedTo(admin);
         return ticketsMapper.toResponseDTO(ticketsRepository.save(ticket));
@@ -83,10 +87,10 @@ public class TicketsServiceImpl implements TicketsService {
     @Override
     public TicketsResponseDTO assignLabel(Long ticketId, Long labelId) {
         Tickets ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
         Label label = labelRepository.findById(labelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Etiqueta no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", labelId));
 
         ticket.getLabels().add(label);
         return ticketsMapper.toResponseDTO(ticketsRepository.save(ticket));
@@ -95,10 +99,10 @@ public class TicketsServiceImpl implements TicketsService {
     @Override
     public TicketsResponseDTO removeLabel(Long ticketId, Long labelId) {
         Tickets ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
         Label label = labelRepository.findById(labelId)
-                .orElseThrow(() -> new ResourceNotFoundException("Etiqueta no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", labelId));
 
         ticket.getLabels().remove(label);
         return ticketsMapper.toResponseDTO(ticketsRepository.save(ticket));
@@ -107,7 +111,7 @@ public class TicketsServiceImpl implements TicketsService {
     @Override
     public TicketsResponseDTO changePriority(Long ticketId, TicketPriority priority) {
         Tickets ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
         ticket.setPriority(priority);
         return ticketsMapper.toResponseDTO(ticketsRepository.save(ticket));
@@ -116,7 +120,7 @@ public class TicketsServiceImpl implements TicketsService {
     @Override
     public TicketsResponseDTO closeTicket(Long ticketId) {
         Tickets ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
         ticket.close();
         return ticketsMapper.toResponseDTO(ticketsRepository.save(ticket));
