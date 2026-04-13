@@ -1,7 +1,7 @@
 package com.femcoders.tico.controller;
 
 import java.util.List;
-import java.util.UUID;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +29,14 @@ public class TicketMessageController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TicketMessage>> getMessages(@PathVariable UUID ticketId) {
+    public ResponseEntity<List<TicketMessage>> getMessages(@PathVariable Long ticketId) {
         List<TicketMessage> messages = ticketMessageService.getMessagesByTicketId(ticketId);
         return ResponseEntity.ok(messages);
     }
 
     @PostMapping
     public ResponseEntity<TicketMessage> createMessage(
-            @PathVariable UUID ticketId,
+            @PathVariable Long ticketId,
             @Valid @RequestBody TicketMessage message) {
         message.setTicketId(ticketId);
         TicketMessage saved = ticketMessageService.createMessage(message);
@@ -44,7 +44,7 @@ public class TicketMessageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMessage(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteMessage(@PathVariable Long id) {
         ticketMessageService.deleteMessage(id);
         return ResponseEntity.noContent().build();
     }

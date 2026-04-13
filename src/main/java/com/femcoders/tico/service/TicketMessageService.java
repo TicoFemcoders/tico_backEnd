@@ -4,7 +4,7 @@ import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.repository.TicketMessageRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.UUID;
+
 
 @Service
 public class TicketMessageService {
@@ -15,15 +15,15 @@ public class TicketMessageService {
         this.ticketMessageRepository = ticketMessageRepository;
     }
 
-    public List<TicketMessage> getMessagesByTicketId(UUID ticketId) {
-        return ticketMessageRepository.findByTicketId(ticketId);
-    }
+   public List<TicketMessage> getMessagesByTicketId(Long ticketId) {
+    return ticketMessageRepository.findByTicketId(ticketId);
+}
 
     public TicketMessage createMessage(TicketMessage message) {
         return ticketMessageRepository.save(message);
     }
 
-    public void deleteMessage(UUID id) {
+    public void deleteMessage(Long id) {
         ticketMessageRepository.deleteById(id);
     }
 

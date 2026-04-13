@@ -1,14 +1,14 @@
 package com.femcoders.tico.repository;
 
 import java.util.List;
-import java.util.UUID;
+
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.femcoders.tico.entity.TicketMessage;
 
-public interface TicketMessageRepository extends JpaRepository<TicketMessage, UUID> {
+public interface TicketMessageRepository extends JpaRepository<TicketMessage, Long>  {
 
-    List<TicketMessage> findByTicketId(UUID ticketId);
+    List<TicketMessage> findByTicketId(Long ticketId);
 
 }
