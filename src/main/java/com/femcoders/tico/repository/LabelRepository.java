@@ -10,7 +10,9 @@ import com.femcoders.tico.entity.Label;
 @Repository
 public interface LabelRepository extends JpaRepository<Label, Long> {
 
-    Optional<Label> findByName(String name);
+    Optional<Label> findByNameContainingIgnoreCase(String name);
 
     boolean existsByName(String name);
+
+    boolean existsByTicketsId(Long id);
 }

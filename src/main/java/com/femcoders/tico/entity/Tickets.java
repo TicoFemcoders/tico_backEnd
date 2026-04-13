@@ -24,9 +24,13 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tickets")
+@Data
+@NoArgsConstructor
 public class Tickets {
 
     @Id
@@ -91,37 +95,4 @@ public class Tickets {
         this.status = TicketStatus.CLOSED;
         this.closedAt = LocalDateTime.now();
     }
-
-    public Long getId() { return id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public TicketStatus getStatus() { return status; }
-    public void setStatus(TicketStatus status) { this.status = status; }
-
-    public TicketPriority getPriority() { return priority; }
-    public void setPriority(TicketPriority priority) { this.priority = priority; }
-
-    public User getCreatedBy() { return createdBy; }
-    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
-
-    public User getAssignedTo() { return assignedTo; }
-    public void setAssignedTo(User assignedTo) { this.assignedTo = assignedTo; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-
-    public LocalDateTime getClosedAt() { return closedAt; }
-    public void setClosedAt(LocalDateTime closedAt) { this.closedAt = closedAt; }
-
-    public String getEmailSubject() { return emailSubject; }
-    public void setEmailSubject(String emailSubject) { this.emailSubject = emailSubject; }
-
-    public Set<Label> getLabels() { return labels; }
-    public void setLabels(Set<Label> labels) { this.labels = labels; }
 }
