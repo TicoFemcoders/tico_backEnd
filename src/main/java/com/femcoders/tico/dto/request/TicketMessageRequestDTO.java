@@ -1,26 +1,22 @@
-package com.femcoders.tico.dto;
+package com.femcoders.tico.dto.request;
 
-
-import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-
 @Data
 public class TicketMessageRequestDTO {
 
-
-    
     @NotNull
-    private UUID authorId;
+    private Long authorId;
 
-   @NotBlank
+    @NotNull
+    private Long ticketId;
+
+    @NotBlank
     private String content;
 
     @NotNull
     private Boolean isInternal;
-
-    
 
 }
