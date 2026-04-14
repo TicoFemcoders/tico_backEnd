@@ -27,6 +27,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuthService authService;
+
     @Override
     @Transactional
     public UserResponseDTO createUser(UserRegisterReqDTO userDto) {
