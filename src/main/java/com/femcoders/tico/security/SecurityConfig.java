@@ -21,53 +21,55 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  private final CustomAuthenticationManager customAuthenticationManager;
-  private final CorsConfigurationSource corsConfigurationSource;
-  private final JwtTokenService jwtTokenService;
+    private final CustomAuthenticationManager customAuthenticationManager;
+    private final CorsConfigurationSource corsConfigurationSource;
+    private final JwtTokenService jwtTokenService;
 
-  @Value("${JWT_SECRET}")
-  private String jwtSecret;
+    @Value("${JWT_SECRET}")
+    private String jwtSecret;
 
-  public SecurityConfig(CustomAuthenticationManager customAuthenticationManager,
-      CorsConfigurationSource corsConfigurationSource,
-      JwtTokenService jwtTokenService) {
-    this.customAuthenticationManager = customAuthenticationManager;
-    this.corsConfigurationSource = corsConfigurationSource;
-    this.jwtTokenService = jwtTokenService;
-  }
+    public SecurityConfig(CustomAuthenticationManager customAuthenticationManager,
+            CorsConfigurationSource corsConfigurationSource,
+            JwtTokenService jwtTokenService) {
+        this.customAuthenticationManager = customAuthenticationManager;
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.jwtTokenService = jwtTokenService;
+    }
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    JWTAuthenticationFilter authenticationFilter = new JWTAuthenticationFilter(
-        customAuthenticationManager, jwtTokenService);
-    authenticationFilter.setFilterProcessesUrl("/login");
+        JWTAuthenticationFilter authenticationFilter = new JWTAuthenticationFilter(
+                customAuthenticationManager, jwtTokenService);
+        authenticationFilter.setFilterProcessesUrl("/login");
 
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.configurationSource(corsConfigurationSource))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-            .requestMatchers("/login").permitAll()
-            .requestMatchers("/error").permitAll()
-            // .requestMatchers("/api/**").hasAnyRole("EMPLOYEE")
-            // .requestMatchers("/api/**").hasRole("ADMIN")
-            // .requestMatchers(HttpMethod.GET, "/api").authenticated()
-            // .requestMatchers("/api/**").hasRole("ADMIN")
-            // .requestMatchers("/api/**").authenticated()
-            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-            // .requestMatchers("/api/tickets/**").permitAll()  // para probar sin autentificar en swagger
-            .anyRequest().authenticated())
-        .addFilter(authenticationFilter)
-        .addFilterAfter(
-            new JWTAuthorizationFilter(customAuthenticationManager, jwtSecret),
-            JWTAuthenticationFilter.class)
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint((request, response, authException) ->
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autorizado")));
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/activation/**").permitAll()
+                        // .requestMatchers("/api/**").hasAnyRole("EMPLOYEE")
+                        // .requestMatchers("/api/**").hasRole("ADMIN")
+                        // .requestMatchers(HttpMethod.GET, "/api").authenticated()
+                        // .requestMatchers("/api/**").hasRole("ADMIN")
+                        // .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // .requestMatchers("/api/tickets/**").permitAll() // para probar sin
+                        // autentificar en swagger
+                        .anyRequest().authenticated())
+                .addFilter(authenticationFilter)
+                .addFilterAfter(
+                        new JWTAuthorizationFilter(customAuthenticationManager, jwtSecret),
+                        JWTAuthenticationFilter.class)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> response
+                                .sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autorizado")));
 
-    return http.build();
-  }
+        return http.build();
+    }
 }
