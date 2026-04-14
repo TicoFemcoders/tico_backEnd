@@ -2,6 +2,8 @@ package com.femcoders.tico.service;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +22,8 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -44,8 +48,12 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         String code = activationService.generateCodeAndSaveToken(savedUser, TokenType.ACTIVATION);
-        emailService.sendActivationCode(savedUser.getEmail(), savedUser.getName(), code);
-        emailService.sendActivationLink(savedUser.getEmail(), savedUser.getName());
+
+        try {
+            emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getName(), code);
+        } catch (Exception e) {
+            log.warn("No se pudo enviar el email de activación a {}: {}", savedUser.getEmail(), e.getMessage());
+        }
 
         return userMapper.toResponseDTO(savedUser);
     }
