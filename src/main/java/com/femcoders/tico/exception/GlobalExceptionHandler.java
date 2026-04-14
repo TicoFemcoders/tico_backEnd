@@ -48,7 +48,10 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, mensaje, null);
     }
 
-    /** Acción no permitida: cerrar un ticket ya cerrado, asignar una etiqueta ya asignada */
+    /**
+     * Acción no permitida: cerrar un ticket ya cerrado, asignar una etiqueta ya
+     * asignada
+     */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalState(
             IllegalStateException ex) {
@@ -100,11 +103,16 @@ public class GlobalExceptionHandler {
                 "Ha ocurrido un error inesperado. Contacta con el administrador del sistema", null);
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
     private ResponseEntity<Map<String, Object>> buildResponse(
             HttpStatus status, String mensaje, Object detalles) {
 
         Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
+        
         body.put("status", status.value());
         body.put("mensaje", mensaje);
         if (detalles != null) {
