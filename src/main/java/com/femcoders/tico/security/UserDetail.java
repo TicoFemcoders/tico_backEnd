@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.femcoders.tico.entity.User;
 
-
 public class UserDetail implements UserDetails {
 
   private final User user;
@@ -24,7 +23,7 @@ public class UserDetail implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    
+
     return user.getRoles().stream()
         .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
         .collect(Collectors.toList());
@@ -57,7 +56,7 @@ public class UserDetail implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return user.getIsActive();
   }
 
 }

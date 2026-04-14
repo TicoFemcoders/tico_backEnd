@@ -3,7 +3,7 @@ package com.femcoders.tico.entity;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import com.femcoders.tico.enums.TokenType;
 
@@ -49,5 +49,5 @@ public class ActivationToken {
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
-  private LocalDateTime createAt;
+  private LocalDateTime createdAt;
 }

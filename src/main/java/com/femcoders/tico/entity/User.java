@@ -53,7 +53,7 @@ public class User {
     private Set<UserRole> roles = new HashSet<>();
 
     @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive = false;
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
