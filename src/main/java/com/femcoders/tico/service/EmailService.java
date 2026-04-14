@@ -19,6 +19,22 @@ public class EmailService {
   @Value("${app.frontend.url}")
   private String frontendUrl;
 
+  public void sendActivationEmail(String toEmail, String userName, String code) {
+    String link = frontendUrl + "/activation?email=" + toEmail;
+    SimpleMailMessage msg = new SimpleMailMessage();
+    msg.setFrom(mailFrom);
+    msg.setTo(toEmail);
+    msg.setSubject("[TICO] Activa tu cuenta");
+    msg.setText(
+        "Hola " + userName + ",\n\n" +
+            "Has sido invitado a TICO — plataforma de soporte de CoHispania.\n\n" +
+            "Tu código de activación es:\n\n    " + code + "\n\n" +
+            "Válido durante 30 minutos.\n\n" +
+            "Accede a este enlace para activar tu cuenta:\n\n    " + link + "\n\n" +
+            "Si no esperabas este email, ignóralo.\n\n— El equipo TICO");
+    mailSender.send(msg);
+  }
+
   public void sendActivationCode(String toEmail, String userName, String code) {
     SimpleMailMessage msg = new SimpleMailMessage();
     msg.setFrom(mailFrom);
