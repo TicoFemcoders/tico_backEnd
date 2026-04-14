@@ -1,6 +1,6 @@
 package com.femcoders.tico.mapper;
 
-import com.femcoders.tico.dto.request.UserRegisterReqDTO;
+import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
 import com.femcoders.tico.dto.response.UserResponseDTO;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
@@ -17,13 +17,13 @@ import org.springframework.web.server.ResponseStatusException;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(target = "passwordHash", source = "password") 
-    @Mapping(target = "id", ignore = true)                
-    @Mapping(target = "createdAt", ignore = true)         
-    @Mapping(target = "updatedAt", ignore = true)         
-    @Mapping(target = "isActive", constant = "true")
-    @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")     
-    User toEntity(UserRegisterReqDTO dto);
+    @Mapping(target = "passwordHash", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "isActive", constant = "false")
+    @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")
+    User toEntity(AdminCreateUserReqDTO dto);
 
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
     UserResponseDTO toResponseDTO(User entity);
