@@ -16,8 +16,6 @@ public interface LabelService {
 
     LabelResDTO updateLabel(Long id, LabelReqDTO labelDTO);
 
-    void deleteLabel(Long id, boolean force);
-    
-
+    void deactivateLabel(Long id);
 
 }

@@ -1,5 +1,6 @@
 package com.femcoders.tico.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class LabelServiceImpl implements LabelService {
 
     label.setName(dto.name());
     label.setColor(dto.color());
+    label.setUpdatedAt(LocalDateTime.now());
 
     Label updatedLabel = labelRepository.save(label);
     return labelMapper.toResponseDto(updatedLabel);
@@ -70,19 +72,18 @@ public class LabelServiceImpl implements LabelService {
 
   @Override
   @Transactional
-  public void deleteLabel(Long id, boolean force) {
+  public void deactivateLabel(Long id) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
-    List<Ticket> associatedTickets = ticketsRepository.findByLabelsId(id);
+
+    List<Tickets> associatedTickets = ticketsRepository.findByLabelsId(id);
+
     if (!associatedTickets.isEmpty()) {
-      if (!force) {
-        throw new IllegalStateException("La etiqueta está en uso por tickets activos. ¿Confirmas la eliminación?");
-      }
-      for (Ticket ticket : associatedTickets) {
-        ticket.getLabels().remove(label);
-      }
-      ticketsRepository.saveAll(associatedTickets);
+      throw new IllegalStateException("La etiqueta está en uso por tickets activos.No se puede desactivar.");
     }
-    labelRepository.delete(label);
+
+    label.setIsActive(false);
+    labelRepository.save(label);
   }
+
 }

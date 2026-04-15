@@ -83,4 +83,9 @@ public class TicketController {
             @PathVariable Long labelId) {
         return new ResponseEntity<>(ticketsService.removeLabel(id, labelId), HttpStatus.OK);
     }
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<TicketsResponseDTO> getTicketById(@PathVariable Long id){
+        return new ResponseEntity<>(ticketsService.getTicketById(id), HttpStatus.OK);
+    }
 }
