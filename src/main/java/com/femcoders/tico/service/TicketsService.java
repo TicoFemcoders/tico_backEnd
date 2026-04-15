@@ -8,13 +8,13 @@ import com.femcoders.tico.enums.TicketPriority;
 
 public interface TicketsService {
 
-    TicketsResponseDTO createTicket(TicketCreateReqDTO dto, Long userId);
+    TicketsResponseDTO createTicket(TicketCreateReqDTO dto);
 
     List<TicketsResponseDTO> getAllTickets();
 
-    List<TicketsResponseDTO> getTicketsByUser(Long userId);
+    List<TicketsResponseDTO> getTicketsByUser();
 
-    List<TicketsResponseDTO> getTicketsByAdmin(Long adminId);
+    List<TicketsResponseDTO> getTicketsByAdmin();
 
     TicketsResponseDTO assignAdmin(Long ticketId, Long adminId);
 

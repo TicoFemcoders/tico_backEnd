@@ -31,9 +31,8 @@ public class TicketsController {
 
     @PostMapping
     public ResponseEntity<TicketsResponseDTO> createTicket(
-            @Valid @RequestBody TicketCreateReqDTO dto,
-            @RequestParam Long userId) {
-        TicketsResponseDTO response = ticketsService.createTicket(dto, userId);
+            @Valid @RequestBody TicketCreateReqDTO dto) {
+        TicketsResponseDTO response = ticketsService.createTicket(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -43,13 +42,13 @@ public class TicketsController {
     }
 
     @GetMapping("/my-tickets")
-    public ResponseEntity<List<TicketsResponseDTO>> getMyTickets(@RequestParam Long userId) {
-        return new ResponseEntity<>(ticketsService.getTicketsByUser(userId), HttpStatus.OK);
+    public ResponseEntity<List<TicketsResponseDTO>> getMyTickets() {
+        return new ResponseEntity<>(ticketsService.getTicketsByUser(), HttpStatus.OK);
     }
 
     @GetMapping("/assigned")
-    public ResponseEntity<List<TicketsResponseDTO>> getAssignedTickets(@RequestParam Long adminId) {
-        return new ResponseEntity<>(ticketsService.getTicketsByAdmin(adminId), HttpStatus.OK);
+    public ResponseEntity<List<TicketsResponseDTO>> getAssignedTickets() {
+        return new ResponseEntity<>(ticketsService.getTicketsByAdmin(), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/assign-admin")

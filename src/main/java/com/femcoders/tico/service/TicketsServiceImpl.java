@@ -33,10 +33,12 @@ public class TicketsServiceImpl implements TicketsService {
     @Autowired
     private TicketsMapper ticketsMapper;
 
+    @Autowired
+    private AuthService authService;
+
     @Override
-    public TicketsResponseDTO createTicket(TicketCreateReqDTO dto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+    public TicketsResponseDTO createTicket(TicketCreateReqDTO dto) {
+        User user = authService.getAuthenticatedUser();
 
         Tickets ticket = ticketsMapper.toEntity(dto);
         ticket.setCreatedBy(user);
@@ -54,19 +56,20 @@ public class TicketsServiceImpl implements TicketsService {
     }
 
     @Override
-    public List<TicketsResponseDTO> getTicketsByUser(Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+    public List<TicketsResponseDTO> getTicketsByUser() {
+        User user = authService.getAuthenticatedUser();
+                
 
-        return ticketsRepository.findByCreatedById(userId)
+        return ticketsRepository.findByCreatedById(user.getId())
                 .stream()
                 .map(ticketsMapper::toResponseDTO)
                 .toList();
     }
 
     @Override
-    public List<TicketsResponseDTO> getTicketsByAdmin(Long adminId) {
-        return ticketsRepository.findByAssignedToIdAndStatusNot(adminId, TicketStatus.CLOSED)
+    public List<TicketsResponseDTO> getTicketsByAdmin() {
+        User admin = authService.getAuthenticatedUser();
+        return ticketsRepository.findByAssignedToIdAndStatusNot(admin.getId(), TicketStatus.CLOSED)
                 .stream()
                 .map(ticketsMapper::toResponseDTO)
                 .toList();
