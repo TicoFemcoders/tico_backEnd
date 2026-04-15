@@ -26,9 +26,15 @@ public class ResetPasswordController {
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/reset")
+  @PostMapping("/confirm")
   public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirmDTO dto) {
     resetPasswordService.confirmReset(dto);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/resend")
+  public ResponseEntity<Void> resendReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
+    resetPasswordService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 }
