@@ -57,8 +57,7 @@ public class SecurityConfig {
                         // .requestMatchers("/api/**").hasRole("ADMIN")
                         // .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // .requestMatchers("/api/tickets/**").permitAll() // para probar sin
-                        // autentificar en swagger
+                        // .requestMatchers("/api/tickets/**").permitAll() // para probar sin autentificar en swagger
                         .anyRequest().authenticated())
                 .addFilter(authenticationFilter)
                 .addFilterAfter(
