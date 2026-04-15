@@ -73,7 +73,7 @@ public class ActivationServiceImpl implements ActivationService {
     }
 
     String code = generateCodeAndSaveToken(user, TokenType.ACTIVATION);
-    emailService.sendActivationCode(user.getEmail(), user.getName(), code);
+    emailService.sendActivationEmail(user.getEmail(), user.getName(), code);
   }
 
   @Override
