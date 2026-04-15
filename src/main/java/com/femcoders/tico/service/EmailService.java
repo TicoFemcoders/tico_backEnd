@@ -35,31 +35,20 @@ public class EmailService {
     mailSender.send(msg);
   }
 
-  public void sendActivationCode(String toEmail, String userName, String code) {
+  public void sendResetEmail(String toEmail, String userName, String code) {
+    String link = frontendUrl + "/reset-password?email=" + toEmail;
     SimpleMailMessage msg = new SimpleMailMessage();
     msg.setFrom(mailFrom);
     msg.setTo(toEmail);
-    msg.setSubject("[TICO] Tu código de activación");
+    msg.setSubject("[TICO] Restablece tu contraseña");
     msg.setText(
         "Hola " + userName + ",\n\n" +
-            "Has sido invitado a TICO — plataforma de soporte de CoHispania.\n\n" +
-            "Tu código de activación es:\n\n    " + code + "\n\n" +
-            "Válido durante 30 minutos.\n" +
-            "Si no esperabas este email, ignóralo.\n\n— El equipo TICO");
+            "Recibimos una solicitud para restablecer la contraseña de tu cuenta en TICO.\n\n" +
+            "Tu código de restablecimiento es:\n\n    " + code + "\n\n" +
+            "Válido durante 30 minutos.\n\n" +
+            "Accede a este enlace para introducir el código y elegir tu nueva contraseña:\n\n    " + link + "\n\n" +
+            "Si no solicitaste este cambio, ignora este email — tu contraseña no cambiará.\n\n— El equipo TICO");
     mailSender.send(msg);
   }
 
-  public void sendActivationLink(String toEmail, String userName) {
-    String link = frontendUrl + "/activation?email=" + toEmail;
-    SimpleMailMessage msg = new SimpleMailMessage();
-    msg.setFrom(mailFrom);
-    msg.setTo(toEmail);
-    msg.setSubject("[TICO] Activa tu cuenta");
-    msg.setText(
-        "Hola " + userName + ",\n\n" +
-            "Accede a este enlace para activar tu cuenta:\n\n" + link + "\n\n" +
-            "Necesitarás el código que te hemos enviado en un email separado.\n\n" +
-            "— El equipo TICO");
-    mailSender.send(msg);
-  }
 }

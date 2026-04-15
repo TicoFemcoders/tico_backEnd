@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "tickets")
 @Data
 @NoArgsConstructor
-public class Tickets {
+public class Ticket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,11 +78,7 @@ public class Tickets {
     private String emailSubject;
 
     @ManyToMany
-    @JoinTable(
-        name = "ticket_labels",
-        joinColumns = @JoinColumn(name = "ticket_id"),
-        inverseJoinColumns = @JoinColumn(name = "label_id")
-    )
+    @JoinTable(name = "ticket_labels", joinColumns = @JoinColumn(name = "ticket_id"), inverseJoinColumns = @JoinColumn(name = "label_id"))
     private Set<Label> labels = new HashSet<>();
 
     /** Se ejecuta tras el primer save() para generar el asunto del hilo de email */

@@ -6,9 +6,8 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.femcoders.tico.dto.request.ActivationReqDTO;
+import com.femcoders.tico.dto.request.ResetPasswordConfirmDTO;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -17,29 +16,52 @@ import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.ActivationTokenRepository;
 import com.femcoders.tico.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
-public class ActivationServiceImpl implements ActivationService {
+public class ResetPasswordServiceImpl implements ResetPasswordService {
 
   private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-  @Autowired
-  private ActivationTokenRepository tokenRepository;
 
   @Autowired
   private UserRepository userRepository;
 
   @Autowired
-  private PasswordEncoder passwordEncoder;
+  private ActivationTokenRepository tokenRepository;
 
   @Autowired
   private EmailService emailService;
 
+  @Autowired
+  private PasswordEncoder passwordEncoder;
+
   @Override
   @Transactional
-  public void activateAccount(ActivationReqDTO dto) {
+  public void requestReset(String email) {
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+
+    if (!Boolean.TRUE.equals(user.getIsActive())) {
+      throw new BadRequestException("Activa tu cuenta antes de resetear la contraseña");
+    }
+
+    String code = generateCode();
+    ActivationToken token = new ActivationToken();
+    token.setUser(user);
+    token.setCode(code);
+    token.setType(TokenType.RESET);
+    token.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+    tokenRepository.save(token);
+
+    emailService.sendResetEmail(user.getEmail(), user.getName(), code);
+  }
+
+  @Override
+  @Transactional
+  public void confirmReset(ResetPasswordConfirmDTO dto) {
     ActivationToken token = tokenRepository
-        .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.ACTIVATION)
-        .orElseThrow(() -> new ResourceNotFoundException("Token", "email", dto.email()));
+        .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.RESET)
+        .orElseThrow(() -> new ResourceNotFoundException("Token de reset", "email", dto.email()));
 
     if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
       throw new BadRequestException("Código expirado");
@@ -58,34 +80,7 @@ public class ActivationServiceImpl implements ActivationService {
 
     User user = token.getUser();
     user.setPasswordHash(passwordEncoder.encode(dto.password()));
-    user.setIsActive(true);
     userRepository.save(user);
-  }
-
-  @Override
-  @Transactional
-  public void resendCode(String email) {
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
-
-    if (Boolean.TRUE.equals(user.getIsActive())) {
-      throw new IllegalStateException("La cuenta ya está activada");
-    }
-
-    String code = generateCodeAndSaveToken(user, TokenType.ACTIVATION);
-    emailService.sendActivationEmail(user.getEmail(), user.getName(), code);
-  }
-
-  @Override
-  public String generateCodeAndSaveToken(User user, TokenType type) {
-    String code = generateCode();
-    ActivationToken token = new ActivationToken();
-    token.setUser(user);
-    token.setCode(code);
-    token.setType(type);
-    token.setExpiresAt(LocalDateTime.now().plusMinutes(30));
-    tokenRepository.save(token);
-    return code;
   }
 
   private String generateCode() {

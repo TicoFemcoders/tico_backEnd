@@ -8,12 +8,12 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.TicketsResponseDTO;
+import com.femcoders.tico.dto.response.TicketResponseDTO;
 import com.femcoders.tico.entity.Label;
-import com.femcoders.tico.entity.Tickets;
+import com.femcoders.tico.entity.Ticket;
 
 @Mapper(componentModel = "spring")
-public interface TicketsMapper {
+public interface TicketMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
@@ -24,12 +24,12 @@ public interface TicketsMapper {
     @Mapping(target = "closedAt", ignore = true)
     @Mapping(target = "emailSubject", ignore = true)
     @Mapping(target = "labels", ignore = true)
-    Tickets toEntity(TicketCreateReqDTO dto);
+    Ticket toEntity(TicketCreateReqDTO dto);
 
     @Mapping(target = "createdById", source = "createdBy.id")
     @Mapping(target = "assignedToId", source = "assignedTo.id")
     @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToNames")
-    TicketsResponseDTO toResponseDTO(Tickets entity);
+    TicketResponseDTO toResponseDTO(Ticket entity);
 
     @Named("labelsToNames")
     default Set<String> labelsToNames(Set<Label> labels) {
