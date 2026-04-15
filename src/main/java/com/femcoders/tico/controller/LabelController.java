@@ -17,8 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -55,13 +55,9 @@ public class LabelController {
         return ResponseEntity.ok(updatedLabel);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLabel(
-            @PathVariable Long id,
-            @RequestParam(name = "force", defaultValue = "false") boolean force) {
-
-        labelService.deleteLabel(id, force);
-
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivateLabel(@PathVariable Long id) {
+        labelService.deactivateLabel(id);
         return ResponseEntity.noContent().build();
     }
 }
