@@ -1,8 +1,9 @@
 package com.femcoders.tico.mapper;
 
 import org.mapstruct.Mapper;
-import com.femcoders.tico.dto.TicketMessageRequestDTO;
-import com.femcoders.tico.dto.TicketMessageResponseDTO;
+
+import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
+import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
 import com.femcoders.tico.entity.TicketMessage;
 import org.mapstruct.Mapping;
 
