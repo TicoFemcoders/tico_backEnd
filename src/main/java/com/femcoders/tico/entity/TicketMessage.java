@@ -14,33 +14,33 @@ import lombok.Data;
 @Entity
 @Table(name = "ticket_message")
 @Data
-
 public class TicketMessage {
 
-   @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   @Column(name = "id")
-   private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-   @Column(name = "ticket_id", nullable = false)
-   private Long ticketId;
+    @Column(name = "ticket_id", nullable = false)
+    private Long ticketId;
 
-   @Column(name = "author_id", nullable = false)
-   private Long authorId;
+    @Column(name = "author_id", nullable = false)
+    private Long authorId;
 
-   @Column(name = "content", nullable = false, columnDefinition = "TEXT")
-   private String content;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
 
-   @Column(name = "is_internal", nullable = false)
-   private Boolean isInternal = false;
+    @Column(name = "is_internal", nullable = false)
+    private Boolean isInternal = false;
 
-   @Column(name = "created_at", updatable = false)
-   private LocalDateTime createdAt;
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead = false;
 
-   @PrePersist
-   protected void onCreate() {
-      this.createdAt = LocalDateTime.now();
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-   }
-
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
