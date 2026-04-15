@@ -85,7 +85,7 @@ public class TicketController {
     }
 
     @GetMapping("/{id}/detail")
-    public ResponseEntity<TicketsResponseDTO> getTicketById(@PathVariable Long id){
+    public ResponseEntity<TicketResponseDTO> getTicketById(@PathVariable Long id){
         return new ResponseEntity<>(ticketsService.getTicketById(id), HttpStatus.OK);
     }
 }
