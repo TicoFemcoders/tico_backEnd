@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.femcoders.tico.dto.request.LabelReqDTO;
 import com.femcoders.tico.dto.response.LabelResDTO;
 import com.femcoders.tico.repository.LabelRepository;
-import com.femcoders.tico.repository.TicketsRepository;
+import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.entity.Label;
-import com.femcoders.tico.entity.Tickets;
+import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 
@@ -25,7 +25,7 @@ public class LabelServiceImpl implements LabelService {
   private LabelMapper labelMapper;
 
   @Autowired
-  private TicketsRepository ticketsRepository;
+  private TicketRepository ticketsRepository;
 
   @Override
   public LabelResDTO createLabel(LabelReqDTO dto) {
@@ -73,12 +73,12 @@ public class LabelServiceImpl implements LabelService {
   public void deleteLabel(Long id, boolean force) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
-    List<Tickets> associatedTickets = ticketsRepository.findByLabelsId(id);
+    List<Ticket> associatedTickets = ticketsRepository.findByLabelsId(id);
     if (!associatedTickets.isEmpty()) {
       if (!force) {
         throw new IllegalStateException("La etiqueta está en uso por tickets activos. ¿Confirmas la eliminación?");
       }
-      for (Tickets ticket : associatedTickets) {
+      for (Ticket ticket : associatedTickets) {
         ticket.getLabels().remove(label);
       }
       ticketsRepository.saveAll(associatedTickets);
