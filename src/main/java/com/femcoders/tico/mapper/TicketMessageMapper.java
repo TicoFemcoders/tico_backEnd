@@ -11,6 +11,7 @@ public interface TicketMessageMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "ticketId", ignore = true)
+    @Mapping(target = "isRead", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     TicketMessage toEntity(TicketMessageRequestDTO dto);
 
