@@ -76,7 +76,7 @@ public class LabelServiceImpl implements LabelService {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
 
-    List<Tickets> associatedTickets = ticketsRepository.findByLabelsId(id);
+    List<Ticket> associatedTickets = ticketsRepository.findByLabelsId(id);
 
     if (!associatedTickets.isEmpty()) {
       throw new IllegalStateException("La etiqueta está en uso por tickets activos.No se puede desactivar.");

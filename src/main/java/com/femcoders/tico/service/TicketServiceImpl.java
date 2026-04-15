@@ -12,6 +12,7 @@ import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
+import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -126,5 +127,18 @@ public class TicketServiceImpl implements TicketService {
 
                 ticket.close();
                 return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
+        }
+        
+        @Override
+        public TicketResponseDTO getTicketById(Long ticketId) {
+               User currentUser = authService.getAuthenticatedUser();
+                Ticket ticket = ticketsRepository.findById(ticketId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+                if (currentUser.getRoles().contains(UserRole.EMPLOYEE)) {
+                        if (!ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+                                throw new ResourceNotFoundException("Ticket", "id", ticketId);
+                        }
+                }
+                return ticketMapper.toResponseDTO(ticket);
         }
 }
