@@ -8,7 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.femcoders.tico.dto.request.ActivationRequestDTO;
+import com.femcoders.tico.dto.request.ActivationReqDTO;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -36,7 +36,7 @@ public class ActivationServiceImpl implements ActivationService {
 
   @Override
   @Transactional
-  public void activateAccount(ActivationRequestDTO dto) {
+  public void activateAccount(ActivationReqDTO dto) {
     ActivationToken token = tokenRepository
         .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.ACTIVATION)
         .orElseThrow(() -> new ResourceNotFoundException("Token", "email", dto.email()));
