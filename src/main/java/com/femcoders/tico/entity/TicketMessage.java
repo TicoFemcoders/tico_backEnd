@@ -11,17 +11,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
-
-
-
 @Entity
 @Table(name = "ticket_message")
 @Data
 
-
 public class TicketMessage {
-
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,10 +31,8 @@ public class TicketMessage {
    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
    private String content;
 
-
    @Column(name = "is_internal", nullable = false)
    private Boolean isInternal = false;
-
 
    @Column(name = "created_at", updatable = false)
    private LocalDateTime createdAt;
@@ -49,12 +41,6 @@ public class TicketMessage {
    protected void onCreate() {
       this.createdAt = LocalDateTime.now();
 
-
-
-
-    
-}
-    
-
+   }
 
 }
