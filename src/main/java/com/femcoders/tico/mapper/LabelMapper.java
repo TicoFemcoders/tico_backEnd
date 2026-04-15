@@ -14,6 +14,7 @@ public interface LabelMapper {
 @Mapping(target = "createdAt", ignore = true)
 @Mapping(target = "updatedAt", ignore = true)
 @Mapping(target = "tickets", ignore = true)
+@Mapping(target = "isActive" , ignore = true)
 Label toEntity(LabelReqDTO dto);
 
 LabelResDTO toResponseDto (Label entity);
