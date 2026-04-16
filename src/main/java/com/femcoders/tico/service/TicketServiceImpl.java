@@ -37,6 +37,9 @@ public class TicketServiceImpl implements TicketService {
         @Autowired
         private AuthService authService;
 
+        @Autowired
+        private EmailService emailService;
+
         @Override
         public TicketResponseDTO createTicket(TicketCreateReqDTO dto) {
                 User user = authService.getAuthenticatedUser();
@@ -45,6 +48,12 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setCreatedBy(user);
 
                 Ticket saved = ticketsRepository.save(ticket);
+
+                emailService.sendTicketCreatedEmail(
+                                user.getEmail(),
+                                user.getName(),
+                                saved.getEmailSubject());
+
                 return ticketMapper.toResponseDTO(saved);
         }
 
@@ -128,10 +137,10 @@ public class TicketServiceImpl implements TicketService {
                 ticket.close();
                 return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
         }
-        
+
         @Override
         public TicketResponseDTO getTicketById(Long ticketId) {
-               User currentUser = authService.getAuthenticatedUser();
+                User currentUser = authService.getAuthenticatedUser();
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
                 if (currentUser.getRoles().contains(UserRole.EMPLOYEE)) {
