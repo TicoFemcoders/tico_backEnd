@@ -51,4 +51,17 @@ public class EmailService {
     mailSender.send(msg);
   }
 
+  public void sendTicketCreatedEmail(String toEmail, String userName, String emailSubject) {
+    SimpleMailMessage msg = new SimpleMailMessage();
+    msg.setFrom(mailFrom);
+    msg.setTo(toEmail);
+    msg.setSubject(emailSubject);
+    msg.setText(
+        "Hola " + userName + ",\n\n" +
+            "Tu ticket ha sido creado correctamente en TICO.\n\n" +
+            "Referencia: " + emailSubject + "\n\n" +
+            "Recibirás notificaciones en este mismo hilo cuando haya actualizaciones.\n\n" +
+            "— El equipo TICO");
+    mailSender.send(msg);
+  }
 }
