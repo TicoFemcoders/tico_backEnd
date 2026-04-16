@@ -16,71 +16,76 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.TicketsResponseDTO;
+import com.femcoders.tico.dto.response.TicketResponseDTO;
 import com.femcoders.tico.enums.TicketPriority;
-import com.femcoders.tico.service.TicketsService;
+import com.femcoders.tico.service.TicketService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/tickets")
-public class TicketsController {
+public class TicketController {
 
     @Autowired
-    private TicketsService ticketsService;
+    private TicketService ticketsService;
 
     @PostMapping
-    public ResponseEntity<TicketsResponseDTO> createTicket(
+    public ResponseEntity<TicketResponseDTO> createTicket(
             @Valid @RequestBody TicketCreateReqDTO dto) {
-        TicketsResponseDTO response = ticketsService.createTicket(dto);
+        TicketResponseDTO response = ticketsService.createTicket(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<TicketsResponseDTO>> getAllTickets() {
+    public ResponseEntity<List<TicketResponseDTO>> getAllTickets() {
         return new ResponseEntity<>(ticketsService.getAllTickets(), HttpStatus.OK);
     }
 
     @GetMapping("/my-tickets")
-    public ResponseEntity<List<TicketsResponseDTO>> getMyTickets() {
+    public ResponseEntity<List<TicketResponseDTO>> getMyTickets() {
         return new ResponseEntity<>(ticketsService.getTicketsByUser(), HttpStatus.OK);
     }
 
     @GetMapping("/assigned")
-    public ResponseEntity<List<TicketsResponseDTO>> getAssignedTickets() {
+    public ResponseEntity<List<TicketResponseDTO>> getAssignedTickets() {
         return new ResponseEntity<>(ticketsService.getTicketsByAdmin(), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/assign-admin")
-    public ResponseEntity<TicketsResponseDTO> assignAdmin(
+    public ResponseEntity<TicketResponseDTO> assignAdmin(
             @PathVariable Long id,
             @RequestParam Long adminId) {
         return new ResponseEntity<>(ticketsService.assignAdmin(id, adminId), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/priority")
-    public ResponseEntity<TicketsResponseDTO> changePriority(
+    public ResponseEntity<TicketResponseDTO> changePriority(
             @PathVariable Long id,
             @RequestParam TicketPriority priority) {
         return new ResponseEntity<>(ticketsService.changePriority(id, priority), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/close")
-    public ResponseEntity<TicketsResponseDTO> closeTicket(@PathVariable Long id) {
+    public ResponseEntity<TicketResponseDTO> closeTicket(@PathVariable Long id) {
         return new ResponseEntity<>(ticketsService.closeTicket(id), HttpStatus.OK);
     }
 
     @PostMapping("/{id}/labels/{labelId}")
-    public ResponseEntity<TicketsResponseDTO> assignLabel(
+    public ResponseEntity<TicketResponseDTO> assignLabel(
             @PathVariable Long id,
             @PathVariable Long labelId) {
         return new ResponseEntity<>(ticketsService.assignLabel(id, labelId), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}/labels/{labelId}")
-    public ResponseEntity<TicketsResponseDTO> removeLabel(
+    public ResponseEntity<TicketResponseDTO> removeLabel(
             @PathVariable Long id,
             @PathVariable Long labelId) {
         return new ResponseEntity<>(ticketsService.removeLabel(id, labelId), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<TicketResponseDTO> getTicketById(@PathVariable Long id){
+        return new ResponseEntity<>(ticketsService.getTicketById(id), HttpStatus.OK);
     }
 }
