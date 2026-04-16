@@ -66,8 +66,10 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/close")
-    public ResponseEntity<TicketResponseDTO> closeTicket(@PathVariable Long id) {
-        return new ResponseEntity<>(ticketsService.closeTicket(id), HttpStatus.OK);
+    public ResponseEntity<TicketResponseDTO> closeTicket(
+            @PathVariable Long id,
+            @RequestParam(required = false) String closingMessage) {
+        return new ResponseEntity<>(ticketsService.closeTicket(id, closingMessage), HttpStatus.OK);
     }
 
     @PostMapping("/{id}/labels/{labelId}")
@@ -85,7 +87,7 @@ public class TicketController {
     }
 
     @GetMapping("/{id}/detail")
-    public ResponseEntity<TicketResponseDTO> getTicketById(@PathVariable Long id){
+    public ResponseEntity<TicketResponseDTO> getTicketById(@PathVariable Long id) {
         return new ResponseEntity<>(ticketsService.getTicketById(id), HttpStatus.OK);
     }
 }

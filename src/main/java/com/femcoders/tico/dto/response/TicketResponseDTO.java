@@ -16,6 +16,7 @@ public record TicketResponseDTO(
                 Long assignedToId,
                 Set<String> labels,
                 String emailSubject,
+                String closingMessage,
                 LocalDateTime createdAt,
                 LocalDateTime updatedAt,
                 LocalDateTime closedAt) {
