@@ -107,7 +107,7 @@ public class GlobalExceptionHandler {
             HttpStatus status, String mensaje, Object detalles) {
 
         Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
+        
         body.put("status", status.value());
         body.put("mensaje", mensaje);
         if (detalles != null) {
