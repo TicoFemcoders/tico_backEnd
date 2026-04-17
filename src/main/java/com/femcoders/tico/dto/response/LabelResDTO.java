@@ -7,7 +7,9 @@ public record LabelResDTO(
     String name,
     String color,
     LocalDateTime createdAt,
-    Boolean active
+    Boolean active,
+    long activeTickets,
+    long closedTickets
 ) {
 
 }
