@@ -17,6 +17,7 @@ public interface LabelMapper {
 @Mapping(target = "isActive" , ignore = true)
 Label toEntity(LabelReqDTO dto);
 
+@Mapping(target = "active", source = "isActive")
 LabelResDTO toResponseDto (Label entity);
 
 }
