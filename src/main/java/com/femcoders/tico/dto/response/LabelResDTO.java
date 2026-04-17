@@ -6,7 +6,8 @@ public record LabelResDTO(
     Long id,
     String name,
     String color,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    Boolean active
 ) {
 
 }
