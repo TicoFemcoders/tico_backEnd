@@ -48,5 +48,5 @@ public class Label {
     private Boolean isActive = true;
 
     @ManyToMany(mappedBy = "labels")
-    private Set<Tickets> tickets = new HashSet<>();
+    private Set<Ticket> tickets = new HashSet<>();
 }

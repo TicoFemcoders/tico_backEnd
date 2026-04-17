@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.ActivationRequestDTO;
+import com.femcoders.tico.dto.request.ActivationReqDTO;
 import com.femcoders.tico.dto.request.ResendCodeRequestDTO;
 import com.femcoders.tico.service.ActivationService;
 
@@ -21,7 +21,7 @@ public class ActivationController {
   private ActivationService activationService;
 
   @PostMapping("/activate")
-  public ResponseEntity<Void> activate(@Valid @RequestBody ActivationRequestDTO dto) {
+  public ResponseEntity<Void> activate(@Valid @RequestBody ActivationReqDTO dto) {
     activationService.activateAccount(dto);
     return ResponseEntity.ok().build();
   }

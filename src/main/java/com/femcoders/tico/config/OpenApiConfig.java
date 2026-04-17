@@ -70,3 +70,4 @@ public class OpenApiConfig {
     return new PathItem().post(post);
   }
 }
+

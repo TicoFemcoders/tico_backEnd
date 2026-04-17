@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "tickets")
 @Data
 @NoArgsConstructor
-public class Tickets {
+public class Ticket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,12 +52,10 @@ public class Tickets {
     @Column(name = "priority", nullable = false)
     private TicketPriority priority = TicketPriority.MEDIUM;
 
-    /** Usuario que abrió el ticket */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    /** Admin asignado. Puede ser null hasta que se asigne */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to")
     private User assignedTo;
@@ -73,19 +71,16 @@ public class Tickets {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
-    /** Asunto fijo del hilo de email: "[TICO-{id}] {title}" */
     @Column(name = "email_subject", length = 255)
     private String emailSubject;
 
+    @Column(name = "closing_message", columnDefinition = "TEXT")
+    private String closingMessage;
+
     @ManyToMany
-    @JoinTable(
-        name = "ticket_labels",
-        joinColumns = @JoinColumn(name = "ticket_id"),
-        inverseJoinColumns = @JoinColumn(name = "label_id")
-    )
+    @JoinTable(name = "ticket_labels", joinColumns = @JoinColumn(name = "ticket_id"), inverseJoinColumns = @JoinColumn(name = "label_id"))
     private Set<Label> labels = new HashSet<>();
 
-    /** Se ejecuta tras el primer save() para generar el asunto del hilo de email */
     @PostPersist
     public void generateEmailSubject() {
         this.emailSubject = "[TICO-" + this.id + "] " + this.title;
