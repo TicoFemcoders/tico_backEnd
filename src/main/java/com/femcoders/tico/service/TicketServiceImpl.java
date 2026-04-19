@@ -298,8 +298,12 @@ public class TicketServiceImpl implements TicketService {
                     "Tu ticket ha sido reactivado: " + ticket.getEmailSubject());
         }
 
-        if (isCreator) {
-            // campana al admin → task_1.19
+        if (isCreator && ticket.getAssignedTo() != null) {
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getAssignedTo().getId(),
+                    "El empleado ha reactivado el ticket: " + ticket.getEmailSubject());
         }
 
         return ticketMapper.toResponseDTO(saved);
