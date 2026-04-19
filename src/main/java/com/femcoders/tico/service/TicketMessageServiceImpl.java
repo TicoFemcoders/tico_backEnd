@@ -76,9 +76,16 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                         ticket.getId(),
                         dto.authorId(),
                         ticket.getCreatedBy().getId(),
-                        "Nueva respuesta en tu ticket: " + ticket.getEmailSubject()
+                        "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
+            }
 
-                );
+            boolean authorIsCreator = ticket.getCreatedBy().getId().equals(dto.authorId());
+            if (authorIsCreator && ticket.getAssignedTo() != null) {
+                notificationService.create(
+                        ticket.getId(),
+                        dto.authorId(),
+                        ticket.getAssignedTo().getId(),
+                        "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
             }
 
         }
