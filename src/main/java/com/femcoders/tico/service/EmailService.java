@@ -61,7 +61,8 @@ public class EmailService {
     String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
         "<p>Tu ticket ha sido creado correctamente en TICO.</p>" +
         "<p><strong>Referencia:</strong> " + emailSubject + "</p>" +
-        "<p>Recibirás notificaciones en este mismo hilo cuando haya actualizaciones.</p>";
+        "<p>Recibirás notificaciones en este mismo hilo cuando haya actualizaciones.</p>" +
+        cta("Ir a TICO");
     send(toEmail, emailSubject, body);
   }
 
@@ -69,7 +70,8 @@ public class EmailService {
     String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
         "<p>La prioridad de tu ticket ha sido actualizada.</p>" +
         "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
-        "<p><strong>Nueva prioridad:</strong> " + newPriority + "</p>";
+        "<p><strong>Nueva prioridad:</strong> " + newPriority + "</p>" +
+        cta("Ir a TICO");
     send(toEmail, emailSubject, body);
   }
 
@@ -77,7 +79,8 @@ public class EmailService {
     String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
         "<p>El estado de tu ticket ha sido actualizado.</p>" +
         "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
-        "<p><strong>Nuevo estado:</strong> " + newStatus + "</p>";
+        "<p><strong>Nuevo estado:</strong> " + newStatus + "</p>" +
+        cta("Ir a TICO");
     send(toEmail, emailSubject, body);
   }
 
@@ -85,8 +88,26 @@ public class EmailService {
     String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
         "<p>Tu ticket ha sido cerrado.</p>" +
         "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
-        "<p>Si necesitas reabrir el ticket puedes hacerlo desde la plataforma.</p>";
+        "<p>Si necesitas reabrir el ticket puedes hacerlo desde la plataforma.</p>" +
+        cta("Ir a TICO");
     send(toEmail, emailSubject, body);
+  }
+
+  public void sendNewMessageEmail(String toEmail, String userName, String emailSubject, String messageContent) {
+    String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        "<p>El equipo de soporte ha respondido a tu ticket.</p>" +
+        "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+        "<p style='margin-top:16px;padding:12px 20px;background:#f9f9f9;border-left:3px solid #f28a2e;" +
+        "border-radius:4px;font-style:italic;color:#555;text-align:center;'>" +
+        "&ldquo;" + messageContent + "&rdquo;</p>" +
+        cta("Ir a TICO");
+    send(toEmail, emailSubject, body);
+  }
+
+  private String cta(String label) {
+    return "<a href='" + frontendUrl + "' style='display:inline-block;margin-top:24px;" +
+        "padding:12px 28px;background:#f28a2e;color:#ffffff;text-decoration:none;" +
+        "border-radius:6px;font-weight:600;font-size:15px;'>" + label + "</a>";
   }
 
   private void send(String toEmail, String subject, String bodyHtml) {
