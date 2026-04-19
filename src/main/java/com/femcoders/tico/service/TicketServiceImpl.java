@@ -13,6 +13,7 @@ import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.enums.UserRole;
+import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -121,27 +122,6 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority) {
-        Ticket ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
-
-        ticket.setPriority(priority);
-        return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
-    }
-
-    @Override
-    public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
-        Ticket ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
-
-        ticket.close();
-        if (closingMessage != null && !closingMessage.isBlank()) {
-            ticket.setClosingMessage(closingMessage);
-        }
-        return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
-    }
-
-    @Override
     public TicketResponseDTO getTicketById(Long ticketId) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = ticketsRepository.findById(ticketId)
@@ -152,5 +132,104 @@ public class TicketServiceImpl implements TicketService {
             }
         }
         return ticketMapper.toResponseDTO(ticket);
+    }
+
+    @Override
+    public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        User currentUser = authService.getAuthenticatedUser();
+        if (ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede modificar este ticket");
+        }
+
+        ticket.setPriority(priority);
+        Ticket saved = ticketsRepository.save(ticket);
+
+        emailService.sendPriorityChangedEmail(
+                ticket.getCreatedBy().getEmail(),
+                ticket.getCreatedBy().getName(),
+                ticket.getEmailSubject(),
+                priorityToSpanish(priority));
+
+        return ticketMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    public TicketResponseDTO changeStatus(Long ticketId, TicketStatus status) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        User currentUser = authService.getAuthenticatedUser();
+        if (ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede modificar este ticket");
+        }
+
+        if (status == TicketStatus.CLOSED) {
+            ticket.close();
+            Ticket saved = ticketsRepository.save(ticket);
+            emailService.sendTicketClosedEmail(
+                    ticket.getCreatedBy().getEmail(),
+                    ticket.getCreatedBy().getName(),
+                    ticket.getEmailSubject());
+
+            return ticketMapper.toResponseDTO(saved);
+        }
+
+        ticket.setStatus(status);
+        Ticket saved = ticketsRepository.save(ticket);
+
+        emailService.sendStatusChangedEmail(
+                ticket.getCreatedBy().getEmail(),
+                ticket.getCreatedBy().getName(),
+                ticket.getEmailSubject(),
+                statusToSpanish(status));
+
+        return ticketMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        User currentUser = authService.getAuthenticatedUser();
+        if (ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede cerrar este ticket");
+        }
+
+        ticket.close();
+        if (closingMessage != null && !closingMessage.isBlank()) {
+            ticket.setClosingMessage(closingMessage);
+        }
+        Ticket saved = ticketsRepository.save(ticket);
+
+        emailService.sendTicketClosedEmail(
+                ticket.getCreatedBy().getEmail(),
+                ticket.getCreatedBy().getName(),
+                ticket.getEmailSubject());
+
+        return ticketMapper.toResponseDTO(saved);
+    }
+
+    private String priorityToSpanish(TicketPriority priority) {
+        return switch (priority) {
+            case LOW -> "Baja";
+            case MEDIUM -> "Media";
+            case HIGH -> "Alta";
+            case CRITICAL -> "Crítica";
+        };
+    }
+
+    private String statusToSpanish(TicketStatus status) {
+        return switch (status) {
+            case OPEN -> "Abierto";
+            case IN_PROGRESS -> "En progreso";
+            case CLOSED -> "Cerrado";
+        };
     }
 }

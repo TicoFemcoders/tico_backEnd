@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
 import com.femcoders.tico.dto.response.TicketResponseDTO;
 import com.femcoders.tico.enums.TicketPriority;
+import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.service.TicketService;
 
 import jakarta.validation.Valid;
@@ -63,6 +64,13 @@ public class TicketController {
             @PathVariable Long id,
             @RequestParam TicketPriority priority) {
         return new ResponseEntity<>(ticketsService.changePriority(id, priority), HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<TicketResponseDTO> changeStatus(
+            @PathVariable Long id,
+            @RequestParam TicketStatus status) {
+        return new ResponseEntity<>(ticketsService.changeStatus(id, status), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/close")
