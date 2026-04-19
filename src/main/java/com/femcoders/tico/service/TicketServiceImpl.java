@@ -216,6 +216,44 @@ public class TicketServiceImpl implements TicketService {
         return ticketMapper.toResponseDTO(saved);
     }
 
+    @Override
+    public TicketResponseDTO reopenTicket(Long ticketId) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        if (ticket.getStatus() != TicketStatus.CLOSED) {
+            throw new BadRequestException("El ticket no está cerrado y no puede reactivarse");
+        }
+
+        User currentUser = authService.getAuthenticatedUser();
+
+        boolean isAssignedAdmin = ticket.getAssignedTo() != null
+                && ticket.getAssignedTo().getId().equals(currentUser.getId());
+        boolean isCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
+
+        if (!isAssignedAdmin && !isCreator) {
+            throw new BadRequestException("Solo el Admin asignado o el creador del ticket pueden reactivarlo");
+        }
+
+        ticket.setStatus(TicketStatus.OPEN);
+        ticket.setClosedAt(null);
+        Ticket saved = ticketsRepository.save(ticket);
+
+        if (isAssignedAdmin) {
+            emailService.sendTicketReopenedEmail(
+                    ticket.getCreatedBy().getEmail(),
+                    ticket.getCreatedBy().getName(),
+                    ticket.getEmailSubject());
+        }
+
+        if (isCreator) {
+
+        }
+
+        return ticketMapper.toResponseDTO(saved);
+
+    }
+
     private String priorityToSpanish(TicketPriority priority) {
         return switch (priority) {
             case LOW -> "Baja";
