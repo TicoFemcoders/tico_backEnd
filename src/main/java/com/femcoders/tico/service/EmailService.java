@@ -104,6 +104,14 @@ public class EmailService {
     send(toEmail, emailSubject, body);
   }
 
+  public void sendTicketReopenedEmail(String toEmail, String userName, String emailSubject) {
+    String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        "<p>Tu ticket ha sido reactivado y está de nuevo en seguimiento.</p>" +
+        "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+        "<p>El equipo de soporte revisará tu caso próximamente.</p>";
+    send(toEmail, emailSubject, body);
+  }
+
   private String cta(String label) {
     return "<a href='" + frontendUrl + "' style='display:inline-block;margin-top:24px;" +
         "padding:12px 28px;background:#f28a2e;color:#ffffff;text-decoration:none;" +

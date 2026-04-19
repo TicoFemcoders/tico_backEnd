@@ -30,4 +30,6 @@ public interface TicketService {
     TicketResponseDTO getTicketById(Long ticketId);
 
     TicketResponseDTO changeStatus(Long ticketId, TicketStatus status);
+
+    TicketResponseDTO reopenTicket(Long ticketId);
 }

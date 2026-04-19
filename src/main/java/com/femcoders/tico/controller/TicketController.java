@@ -80,6 +80,11 @@ public class TicketController {
         return new ResponseEntity<>(ticketsService.closeTicket(id, closingMessage), HttpStatus.OK);
     }
 
+    @PutMapping("/{id}/reopen")
+    public ResponseEntity<TicketResponseDTO> reopenTicket(@PathVariable Long id) {
+        return new ResponseEntity<>(ticketsService.reopenTicket(id), HttpStatus.OK);
+    }
+
     @PostMapping("/{id}/labels/{labelId}")
     public ResponseEntity<TicketResponseDTO> assignLabel(
             @PathVariable Long id,
