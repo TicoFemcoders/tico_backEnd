@@ -13,6 +13,7 @@ import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.enums.UserRole;
+import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -40,6 +41,9 @@ public class TicketServiceImpl implements TicketService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public TicketResponseDTO createTicket(TicketCreateReqDTO dto) {
         User user = authService.getAuthenticatedUser();
@@ -53,6 +57,12 @@ public class TicketServiceImpl implements TicketService {
                 user.getEmail(),
                 user.getName(),
                 saved.getEmailSubject());
+
+        notificationService.create(
+                saved.getId(),
+                user.getId(),
+                user.getId(),
+                "Tu ticket ha sido creado: " + saved.getEmailSubject());
 
         return ticketMapper.toResponseDTO(saved);
     }
@@ -92,8 +102,21 @@ public class TicketServiceImpl implements TicketService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", adminId));
 
+        boolean isReassignment = ticket.getAssignedTo() != null;
+        String content = isReassignment
+                ? "Te han reasignado el ticket: " + ticket.getEmailSubject()
+                : "Se te ha asignado un nuevo ticket: " + ticket.getEmailSubject();
+
         ticket.setAssignedTo(admin);
-        return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
+        Ticket saved = ticketsRepository.save(ticket);
+
+        notificationService.create(
+                ticket.getId(),
+                authService.getAuthenticatedUser().getId(),
+                admin.getId(),
+                content);
+
+        return ticketMapper.toResponseDTO(saved);
     }
 
     @Override
@@ -121,27 +144,6 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority) {
-        Ticket ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
-
-        ticket.setPriority(priority);
-        return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
-    }
-
-    @Override
-    public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
-        Ticket ticket = ticketsRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
-
-        ticket.close();
-        if (closingMessage != null && !closingMessage.isBlank()) {
-            ticket.setClosingMessage(closingMessage);
-        }
-        return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
-    }
-
-    @Override
     public TicketResponseDTO getTicketById(Long ticketId) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = ticketsRepository.findById(ticketId)
@@ -152,5 +154,176 @@ public class TicketServiceImpl implements TicketService {
             }
         }
         return ticketMapper.toResponseDTO(ticket);
+    }
+
+    @Override
+    public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        User currentUser = authService.getAuthenticatedUser();
+        if (ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede modificar este ticket");
+        }
+
+        ticket.setPriority(priority);
+        Ticket saved = ticketsRepository.save(ticket);
+
+        emailService.sendPriorityChangedEmail(
+                ticket.getCreatedBy().getEmail(),
+                ticket.getCreatedBy().getName(),
+                ticket.getEmailSubject(),
+                priorityToSpanish(priority));
+
+        notificationService.create(
+                ticket.getId(),
+                currentUser.getId(),
+                ticket.getCreatedBy().getId(),
+                "Prioridad actualizada a " + priorityToSpanish(priority) + ": " + ticket.getEmailSubject());
+
+        return ticketMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    public TicketResponseDTO changeStatus(Long ticketId, TicketStatus status) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        User currentUser = authService.getAuthenticatedUser();
+        if (ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede modificar este ticket");
+        }
+
+        if (status == TicketStatus.CLOSED) {
+            ticket.close();
+            Ticket saved = ticketsRepository.save(ticket);
+            emailService.sendTicketClosedEmail(
+                    ticket.getCreatedBy().getEmail(),
+                    ticket.getCreatedBy().getName(),
+                    ticket.getEmailSubject());
+
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getCreatedBy().getId(),
+                    "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+
+            return ticketMapper.toResponseDTO(saved);
+        }
+
+        ticket.setStatus(status);
+        Ticket saved = ticketsRepository.save(ticket);
+
+        emailService.sendStatusChangedEmail(
+                ticket.getCreatedBy().getEmail(),
+                ticket.getCreatedBy().getName(),
+                ticket.getEmailSubject(),
+                statusToSpanish(status));
+
+        notificationService.create(
+                ticket.getId(),
+                currentUser.getId(),
+                ticket.getCreatedBy().getId(),
+                "Estado actualizado a " + statusToSpanish(status) + ": " + ticket.getEmailSubject());
+
+        return ticketMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        User currentUser = authService.getAuthenticatedUser();
+        if (ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede cerrar este ticket");
+        }
+
+        ticket.close();
+        if (closingMessage != null && !closingMessage.isBlank()) {
+            ticket.setClosingMessage(closingMessage);
+        }
+        Ticket saved = ticketsRepository.save(ticket);
+
+        emailService.sendTicketClosedEmail(
+                ticket.getCreatedBy().getEmail(),
+                ticket.getCreatedBy().getName(),
+                ticket.getEmailSubject());
+
+        notificationService.create(
+                ticket.getId(),
+                currentUser.getId(),
+                ticket.getCreatedBy().getId(),
+                "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+
+        return ticketMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    public TicketResponseDTO reopenTicket(Long ticketId) {
+        Ticket ticket = ticketsRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+
+        if (ticket.getStatus() != TicketStatus.CLOSED) {
+            throw new BadRequestException("El ticket no está cerrado y no puede reactivarse");
+        }
+
+        User currentUser = authService.getAuthenticatedUser();
+
+        boolean isAssignedAdmin = ticket.getAssignedTo() != null
+                && ticket.getAssignedTo().getId().equals(currentUser.getId());
+        boolean isCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
+
+        if (!isAssignedAdmin && !isCreator) {
+            throw new BadRequestException("Solo el Admin asignado o el creador del ticket pueden reactivarlo");
+        }
+
+        ticket.setStatus(TicketStatus.OPEN);
+        ticket.setClosedAt(null);
+        Ticket saved = ticketsRepository.save(ticket);
+
+        if (isAssignedAdmin) {
+            emailService.sendTicketReopenedEmail(
+                    ticket.getCreatedBy().getEmail(),
+                    ticket.getCreatedBy().getName(),
+                    ticket.getEmailSubject());
+
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getCreatedBy().getId(),
+                    "Tu ticket ha sido reactivado: " + ticket.getEmailSubject());
+        }
+
+        if (isCreator && ticket.getAssignedTo() != null) {
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getAssignedTo().getId(),
+                    "El empleado ha reactivado el ticket: " + ticket.getEmailSubject());
+        }
+
+        return ticketMapper.toResponseDTO(saved);
+
+    }
+
+    private String priorityToSpanish(TicketPriority priority) {
+        return switch (priority) {
+            case LOW -> "Baja";
+            case MEDIUM -> "Media";
+            case HIGH -> "Alta";
+            case CRITICAL -> "Crítica";
+        };
+    }
+
+    private String statusToSpanish(TicketStatus status) {
+        return switch (status) {
+            case OPEN -> "Abierto";
+            case IN_PROGRESS -> "En progreso";
+            case CLOSED -> "Cerrado";
+        };
     }
 }

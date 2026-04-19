@@ -5,6 +5,7 @@ import java.util.List;
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
 import com.femcoders.tico.dto.response.TicketResponseDTO;
 import com.femcoders.tico.enums.TicketPriority;
+import com.femcoders.tico.enums.TicketStatus;
 
 public interface TicketService {
 
@@ -27,4 +28,8 @@ public interface TicketService {
     TicketResponseDTO closeTicket(Long ticketId, String closingMessage);
 
     TicketResponseDTO getTicketById(Long ticketId);
+
+    TicketResponseDTO changeStatus(Long ticketId, TicketStatus status);
+
+    TicketResponseDTO reopenTicket(Long ticketId);
 }
