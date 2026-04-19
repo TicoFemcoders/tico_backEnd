@@ -66,7 +66,8 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 emailService.sendNewMessageEmail(
                         ticket.getCreatedBy().getEmail(),
                         ticket.getCreatedBy().getName(),
-                        ticket.getEmailSubject());
+                        ticket.getEmailSubject(),
+                        saved.getContent());
             }
 
         }
