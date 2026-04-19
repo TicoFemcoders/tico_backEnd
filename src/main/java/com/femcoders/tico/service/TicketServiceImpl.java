@@ -102,8 +102,21 @@ public class TicketServiceImpl implements TicketService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", adminId));
 
+        boolean isReassignment = ticket.getAssignedTo() != null;
+        String content = isReassignment
+                ? "Te han reasignado el ticket: " + ticket.getEmailSubject()
+                : "Se te ha asignado un nuevo ticket: " + ticket.getEmailSubject();
+
         ticket.setAssignedTo(admin);
-        return ticketMapper.toResponseDTO(ticketsRepository.save(ticket));
+        Ticket saved = ticketsRepository.save(ticket);
+
+        notificationService.create(
+                ticket.getId(),
+                authService.getAuthenticatedUser().getId(),
+                admin.getId(),
+                content);
+
+        return ticketMapper.toResponseDTO(saved);
     }
 
     @Override
