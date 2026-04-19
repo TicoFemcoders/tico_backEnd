@@ -65,6 +65,30 @@ public class EmailService {
     send(toEmail, emailSubject, body);
   }
 
+  public void sendPriorityChangedEmail(String toEmail, String userName, String emailSubject, String newPriority) {
+    String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        "<p>La prioridad de tu ticket ha sido actualizada.</p>" +
+        "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+        "<p><strong>Nueva prioridad:</strong> " + newPriority + "</p>";
+    send(toEmail, emailSubject, body);
+  }
+
+  public void sendStatusChangedEmail(String toEmail, String userName, String emailSubject, String newStatus) {
+    String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        "<p>El estado de tu ticket ha sido actualizado.</p>" +
+        "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+        "<p><strong>Nuevo estado:</strong> " + newStatus + "</p>";
+    send(toEmail, emailSubject, body);
+  }
+
+  public void sendTicketClosedEmail(String toEmail, String userName, String emailSubject) {
+    String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        "<p>Tu ticket ha sido cerrado.</p>" +
+        "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+        "<p>Si necesitas reabrir el ticket puedes hacerlo desde la plataforma.</p>";
+    send(toEmail, emailSubject, body);
+  }
+
   private void send(String toEmail, String subject, String bodyHtml) {
     try {
       MimeMessage message = mailSender.createMimeMessage();
@@ -86,15 +110,15 @@ public class EmailService {
         "<table width='600' cellpadding='0' cellspacing='0' border='0' " +
         "style='margin:32px auto;background:#ffffff;border-radius:8px;" +
         "overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);'>" +
-        // Header con logo
+
         "<tr><td style='background:#202B45;padding:24px 32px;'>" +
         "<img src='cid:logo' alt='TICO' height='70' style='display:block;'>" +
         "</td></tr>" +
-        // Cuerpo
+
         "<tr><td style='padding:32px;font-size:15px;color:#333333;line-height:1.7;text-align:center;'>" +
         bodyContent +
         "</td></tr>" +
-        // Footer
+
         "<tr><td style='background:#f9f9f9;padding:16px 32px;font-size:12px;" +
         "color:#aaaaaa;text-align:center;border-top:1px solid #eeeeee;'>" +
         "TICO &mdash; Sistema de soporte de CoHispania" +
