@@ -3,12 +3,14 @@ package com.femcoders.tico.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.femcoders.tico.dto.response.NotificationResponseDTO;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.TicketMessageRepository;
 
+@Service
 public class NotificationServiceImpl implements NotificationService {
 
   @Autowired

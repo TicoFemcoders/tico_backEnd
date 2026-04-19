@@ -41,6 +41,9 @@ public class TicketServiceImpl implements TicketService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public TicketResponseDTO createTicket(TicketCreateReqDTO dto) {
         User user = authService.getAuthenticatedUser();
@@ -54,6 +57,12 @@ public class TicketServiceImpl implements TicketService {
                 user.getEmail(),
                 user.getName(),
                 saved.getEmailSubject());
+
+        notificationService.create(
+                saved.getId(),
+                user.getId(),
+                user.getId(),
+                "Tu ticket ha sido creado: " + saved.getEmailSubject());
 
         return ticketMapper.toResponseDTO(saved);
     }
@@ -154,6 +163,12 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getEmailSubject(),
                 priorityToSpanish(priority));
 
+        notificationService.create(
+                ticket.getId(),
+                currentUser.getId(),
+                ticket.getCreatedBy().getId(),
+                "Prioridad actualizada a " + priorityToSpanish(priority) + ": " + ticket.getEmailSubject());
+
         return ticketMapper.toResponseDTO(saved);
     }
 
@@ -176,6 +191,12 @@ public class TicketServiceImpl implements TicketService {
                     ticket.getCreatedBy().getName(),
                     ticket.getEmailSubject());
 
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getCreatedBy().getId(),
+                    "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+
             return ticketMapper.toResponseDTO(saved);
         }
 
@@ -187,6 +208,12 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getCreatedBy().getName(),
                 ticket.getEmailSubject(),
                 statusToSpanish(status));
+
+        notificationService.create(
+                ticket.getId(),
+                currentUser.getId(),
+                ticket.getCreatedBy().getId(),
+                "Estado actualizado a " + statusToSpanish(status) + ": " + ticket.getEmailSubject());
 
         return ticketMapper.toResponseDTO(saved);
     }
@@ -212,6 +239,12 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getCreatedBy().getEmail(),
                 ticket.getCreatedBy().getName(),
                 ticket.getEmailSubject());
+
+        notificationService.create(
+                ticket.getId(),
+                currentUser.getId(),
+                ticket.getCreatedBy().getId(),
+                "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
 
         return ticketMapper.toResponseDTO(saved);
     }
@@ -244,10 +277,16 @@ public class TicketServiceImpl implements TicketService {
                     ticket.getCreatedBy().getEmail(),
                     ticket.getCreatedBy().getName(),
                     ticket.getEmailSubject());
+
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getCreatedBy().getId(),
+                    "Tu ticket ha sido reactivado: " + ticket.getEmailSubject());
         }
 
         if (isCreator) {
-
+            // campana al admin → task_1.19
         }
 
         return ticketMapper.toResponseDTO(saved);
