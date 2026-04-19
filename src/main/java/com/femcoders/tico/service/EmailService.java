@@ -89,6 +89,14 @@ public class EmailService {
     send(toEmail, emailSubject, body);
   }
 
+  public void sendNewMessageEmail(String toEmail, String userName, String emailSubject) {
+    String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        "<p>El equipo de soporte ha respondido a tu ticket.</p>" +
+        "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+        "<p>Accede a TICO para ver la respuesta completa.</p>";
+    send(toEmail, emailSubject, body);
+  }
+
   private void send(String toEmail, String subject, String bodyHtml) {
     try {
       MimeMessage message = mailSender.createMimeMessage();
