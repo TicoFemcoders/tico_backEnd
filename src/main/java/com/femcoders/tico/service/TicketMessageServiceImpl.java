@@ -34,6 +34,9 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId) {
         return ticketMessageRepository.findByTicketId(ticketId)
@@ -68,6 +71,14 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                         ticket.getCreatedBy().getName(),
                         ticket.getEmailSubject(),
                         saved.getContent());
+
+                notificationService.create(
+                        ticket.getId(),
+                        dto.authorId(),
+                        ticket.getCreatedBy().getId(),
+                        "Nueva respuesta en tu ticket: " + ticket.getEmailSubject()
+
+                );
             }
 
         }
