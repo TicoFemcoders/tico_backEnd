@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.femcoders.tico.dto.response.NotificationResponseDTO;
 import com.femcoders.tico.entity.TicketMessage;
+import com.femcoders.tico.entity.User;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.TicketMessageRepository;
+import com.femcoders.tico.repository.UserRepository;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -17,16 +19,20 @@ public class NotificationServiceImpl implements NotificationService {
   private TicketMessageRepository ticketMessageRepository;
 
   @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
   private AuthService authService;
 
   @Override
   public void create(Long ticketId, Long authorId, Long recipientId, String content) {
+    User author = userRepository.findById(authorId)
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", authorId));
     TicketMessage notification = new TicketMessage();
     notification.setTicketId(ticketId);
-    notification.setAuthorId(authorId);
+    notification.setAuthor(author);
     notification.setRecipientId(recipientId);
     notification.setContent(content);
-    notification.setIsInternal(false);
     ticketMessageRepository.save(notification);
   }
 
