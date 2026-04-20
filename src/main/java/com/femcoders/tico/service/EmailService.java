@@ -108,7 +108,8 @@ public class EmailService {
     String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
         "<p>Tu ticket ha sido reactivado y está de nuevo en seguimiento.</p>" +
         "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
-        "<p>El equipo de soporte revisará tu caso próximamente.</p>";
+        "<p>El equipo de soporte revisará tu caso próximamente.</p>" +
+        cta("Ir a TICO");
     send(toEmail, emailSubject, body);
   }
 
