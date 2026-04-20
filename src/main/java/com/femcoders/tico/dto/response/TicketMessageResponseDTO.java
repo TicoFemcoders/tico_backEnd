@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 public record TicketMessageResponseDTO(
         Long id,
         Long ticketId,
-        Long authorId,
+        String authorName,
         String content,
-        Boolean isInternal,
         Boolean isRead,
-        LocalDateTime createdAt) {
+        LocalDateTime createdAt,
+        Long recipientId) {
 }
