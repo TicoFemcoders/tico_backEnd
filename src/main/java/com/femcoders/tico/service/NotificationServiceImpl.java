@@ -11,6 +11,9 @@ import com.femcoders.tico.entity.User;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.TicketMessageRepository;
 import com.femcoders.tico.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import com.femcoders.tico.dto.response.NotificationSummaryDTO;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -54,6 +57,21 @@ public class NotificationServiceImpl implements NotificationService {
         .stream()
         .map(this::toDTO)
         .toList();
+  }
+
+  @Override
+  public NotificationSummaryDTO getPaginatedSummary(int page, int size) {
+      Long userId = authService.getAuthenticatedUser().getId();
+
+    long unreadCount = ticketMessageRepository.countByRecipientIdAndIsReadFalse(userId);
+    Pageable pageable = PageRequest.of(page, size);
+    List<NotificationResponseDTO> recentNotifications = ticketMessageRepository
+          .findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId, pageable)
+          .stream()
+          .map(this::toDTO)
+          .toList();
+          
+      return new NotificationSummaryDTO(unreadCount, recentNotifications);
   }
 
   @Override

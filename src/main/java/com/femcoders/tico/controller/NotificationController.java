@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.femcoders.tico.dto.response.NotificationResponseDTO;
+import com.femcoders.tico.dto.response.NotificationSummaryDTO;
 import com.femcoders.tico.service.NotificationService;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("api/notifications")
@@ -21,9 +23,17 @@ public class NotificationController {
   private NotificationService notificationService;
 
   @GetMapping
-  public ResponseEntity<List<NotificationResponseDTO>> getAll() {
-    return ResponseEntity.ok(notificationService.getAll());
+  public ResponseEntity<NotificationSummaryDTO> getPaginatedNotifications(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size
+    ) {
+      return ResponseEntity.ok(notificationService.getPaginatedSummary(page, size));
   }
+  
+  // @GetMapping
+  // public ResponseEntity<List<NotificationResponseDTO>> getAll() {
+  //   return ResponseEntity.ok(notificationService.getAll());
+  // }
 
   @GetMapping("/unread")
   public ResponseEntity<List<NotificationResponseDTO>> getUnread() {
