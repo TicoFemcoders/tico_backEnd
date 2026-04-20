@@ -39,6 +39,9 @@ public class TicketMessage {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "recipient_id")
+    private Long recipientId;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

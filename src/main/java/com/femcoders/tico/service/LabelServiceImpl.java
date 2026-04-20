@@ -32,7 +32,6 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     public LabelResDTO createLabel(LabelReqDTO dto) {
-
         if (labelRepository.existsByName(dto.name())) {
             throw new ConflictException("La etiqueta '" + dto.name() + "' ya existe");
         }
@@ -41,17 +40,39 @@ public class LabelServiceImpl implements LabelService {
         return labelMapper.toResponseDto(savedLabel);
     }
 
+    // @Override
+    // public List<LabelResDTO> getAllLabels() {
+    // return labelRepository.findAll()
+    // .stream()
+    // .map(labelMapper::toResponseDto)
+    // .toList();
+    // }
+    
     @Override
     public List<LabelResDTO> getAllLabels() {
-        return labelRepository.findAll()
-                .stream()
-                .map(labelMapper::toResponseDto)
+        return labelRepository.findAll().stream()
+                .map(label -> {
+                    LabelResDTO dto = labelMapper.toResponseDto(label);
+
+                    long activeCount = labelRepository.countActiveTicketsByLabelId(label.getId());
+                    long closedCount = labelRepository.countClosedTicketsByLabelId(label.getId());
+
+                    return new LabelResDTO(
+                            dto.id(),
+                            dto.name(),
+                            dto.color(),
+                            dto.createdAt(),
+                            dto.active(),
+                            activeCount,
+                            closedCount);
+                })
                 .toList();
     }
 
     @Override
     public List<LabelResDTO> filterLabelsByName(String name) {
-        return labelRepository.findByNameContainingIgnoreCase(name).stream()
+        return labelRepository.findByNameContainingIgnoreCase(name)
+                .stream()
                 .map(labelMapper::toResponseDto)
                 .toList();
     }
@@ -64,6 +85,8 @@ public class LabelServiceImpl implements LabelService {
 
         label.setName(dto.name());
         label.setColor(dto.color());
+        label.setUpdatedAt(LocalDateTime.now());
+
         label.setUpdatedAt(LocalDateTime.now());
         return labelMapper.toResponseDto(labelRepository.save(label));
     }
@@ -93,5 +116,4 @@ public class LabelServiceImpl implements LabelService {
         label.setIsActive(false);
         labelRepository.save(label);
     }
-
 }

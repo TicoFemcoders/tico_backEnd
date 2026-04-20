@@ -29,6 +29,7 @@ public interface TicketMapper {
     @Mapping(target = "createdById", source = "createdBy.id")
     @Mapping(target = "assignedToId", source = "assignedTo.id")
     @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToNames")
+    @Mapping(target = "closingMessage", source = "closingMessage")
     TicketResponseDTO toResponseDTO(Ticket entity);
 
     @Named("labelsToNames")
