@@ -41,11 +41,32 @@ public class LabelServiceImpl implements LabelService {
     return labelMapper.toResponseDto(savedLabel);
   }
 
+  // @Override
+  // public List<LabelResDTO> getAllLabels() {
+  // return labelRepository.findAll()
+  // .stream()
+  // .map(labelMapper::toResponseDto)
+  // .toList();
+  // }
+  // LabelServiceImpl.java
   @Override
   public List<LabelResDTO> getAllLabels() {
-    return labelRepository.findAll()
-        .stream()
-        .map(labelMapper::toResponseDto)
+    return labelRepository.findAll().stream()
+        .map(label -> {
+          LabelResDTO dto = labelMapper.toResponseDto(label);
+
+          long activeCount = labelRepository.countActiveTicketsByLabelId(label.getId());
+          long closedCount = labelRepository.countClosedTicketsByLabelId(label.getId());
+
+          return new LabelResDTO(
+              dto.id(),
+              dto.name(),
+              dto.color(),
+              dto.createdAt(),
+              dto.active(),
+              activeCount, 
+              closedCount);
+        })
         .toList();
   }
 
