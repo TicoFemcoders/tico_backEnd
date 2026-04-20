@@ -23,5 +23,4 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
 
-    List<Ticket> findByLabelsIdAndStatusNot(Long id, TicketStatus closed);
 }
