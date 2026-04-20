@@ -13,6 +13,7 @@ import com.femcoders.tico.repository.LabelRepository;
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Ticket;
+import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 
@@ -41,14 +42,6 @@ public class LabelServiceImpl implements LabelService {
     return labelMapper.toResponseDto(savedLabel);
   }
 
-  // @Override
-  // public List<LabelResDTO> getAllLabels() {
-  // return labelRepository.findAll()
-  // .stream()
-  // .map(labelMapper::toResponseDto)
-  // .toList();
-  // }
-  // LabelServiceImpl.java
   @Override
   public List<LabelResDTO> getAllLabels() {
     return labelRepository.findAll().stream()
@@ -64,7 +57,7 @@ public class LabelServiceImpl implements LabelService {
               dto.color(),
               dto.createdAt(),
               dto.active(),
-              activeCount, 
+              activeCount,
               closedCount);
         })
         .toList();
@@ -97,14 +90,23 @@ public class LabelServiceImpl implements LabelService {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
 
-    List<Ticket> associatedTickets = ticketsRepository.findByLabelsId(id);
+     List<Ticket> activeTickets = ticketsRepository.findByLabelsIdAndStatusNot(id, TicketStatus.CLOSED);
 
-    if (!associatedTickets.isEmpty()) {
+    if (!activeTickets.isEmpty()) {
       throw new IllegalStateException("La etiqueta está en uso por tickets activos.No se puede desactivar.");
     }
 
     label.setIsActive(false);
     labelRepository.save(label);
+  }
+
+  @Override
+  public LabelResDTO activateLabel(Long id) {
+    Label label = labelRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
+    label.setIsActive(true);
+    label.setUpdatedAt(LocalDateTime.now());
+    return labelMapper.toResponseDto(labelRepository.save(label));
   }
 
 }

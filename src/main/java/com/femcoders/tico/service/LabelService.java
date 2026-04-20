@@ -18,4 +18,6 @@ public interface LabelService {
 
     void deactivateLabel(Long id);
 
+    LabelResDTO activateLabel(Long id);
+
 }
