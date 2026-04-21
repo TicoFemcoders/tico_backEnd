@@ -9,14 +9,14 @@ public interface LabelService {
 
     public LabelResDTO createLabel(LabelReqDTO dto);
 
-    List<LabelResDTO> getAllLabels();
+    public List<LabelResDTO> getAllLabels();
 
-    List<LabelResDTO> filterLabelsByName(String name);
+    public List<LabelResDTO> filterLabelsByName(String name);
 
-    LabelResDTO updateLabel(Long id, LabelReqDTO labelDTO);
+    public LabelResDTO updateLabel(Long id, LabelReqDTO labelDTO);
 
-    void deactivateLabel(Long id);
+    public void deactivateLabel(Long id);
 
-    LabelResDTO activateLabel(Long id);
+    public LabelResDTO activateLabel(Long id);
 
 }

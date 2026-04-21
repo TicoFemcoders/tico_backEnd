@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface TicketMessageService {
 
-    List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId);
+    public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId);
 
-    TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto);
+    public TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto);
 
-    void deleteMessage(Long id);
+    public void deleteMessage(Long id);
 
 }

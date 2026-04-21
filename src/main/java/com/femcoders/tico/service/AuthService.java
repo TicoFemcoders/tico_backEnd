@@ -4,7 +4,7 @@ import com.femcoders.tico.entity.User;
 
 public interface AuthService {
 
-     User getAuthenticatedUser();
+     public User getAuthenticatedUser();
 
-     User getOptionalAuthenticatedUser();
+     public User getOptionalAuthenticatedUser();
 }
