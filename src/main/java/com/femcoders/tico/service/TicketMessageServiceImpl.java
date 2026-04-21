@@ -93,6 +93,10 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private Ticket loadTicketForAuthorizedUser(Long ticketId, User currentUser) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+        if (currentUser.getRoles().contains(UserRole.EMPLOYEE)
+                && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Solo el creador del ticket puede responder en él");
+        }
         if (currentUser.getRoles().contains(UserRole.ADMIN)
                 && ticket.getAssignedTo() != null
                 && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
@@ -100,5 +104,4 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         }
         return ticket;
     }
-
 }
