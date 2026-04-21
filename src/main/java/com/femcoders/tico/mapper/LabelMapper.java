@@ -8,8 +8,9 @@ import com.femcoders.tico.dto.request.LabelReqDTO;
 import com.femcoders.tico.dto.response.LabelResDTO;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
+import com.femcoders.tico.utils.LabelMappingUtils;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = LabelMappingUtils.class)
 public interface LabelMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -20,21 +21,9 @@ public interface LabelMapper {
     Label toEntity(LabelReqDTO dto);
 
     @Mapping(target = "active", source = "isActive")
-    @Mapping(target = "activeTickets", expression = "java(countActive(label))")
-    @Mapping(target = "closedTickets", expression = "java(countClosed(label))")
+    @Mapping(target = "activeTickets", source = "label", qualifiedByName = "countActiveTickets")
+    @Mapping(target = "closedTickets", source = "label", qualifiedByName = "countClosedTickets")
     LabelResDTO toResponseDto(Label label);
-
-    default long countActive(Label label) {
-        return label.getTickets().stream()
-                .filter(t -> t.getStatus() != TicketStatus.CLOSED)
-                .count();
-    }
-
-    default long countClosed(Label label) {
-        return label.getTickets().stream()
-                .filter(t -> t.getStatus() == TicketStatus.CLOSED)
-                .count();
-    }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
