@@ -11,23 +11,35 @@ import lombok.RequiredArgsConstructor;
 import com.femcoders.tico.dto.response.NotificationResponseDTO;
 import com.femcoders.tico.dto.response.NotificationSummaryDTO;
 import com.femcoders.tico.entity.TicketMessage;
+import com.femcoders.tico.entity.User;
+import com.femcoders.tico.exception.ResourceNotFoundException;
+import com.femcoders.tico.repository.TicketMessageRepository;
+import com.femcoders.tico.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
-  private final TicketMessageService ticketMessageService;
+  private final TicketMessageRepository ticketMessageRepository;
+  private final UserRepository userRepository;
   private final AuthService authService;
 
   @Override
   public void create(Long ticketId, Long authorId, Long recipientId, String content) {
-    ticketMessageService.createNotification(ticketId, authorId, recipientId, content);
+    User author = userRepository.findById(authorId)
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", authorId));
+    TicketMessage notification = new TicketMessage();
+    notification.setTicketId(ticketId);
+    notification.setAuthor(author);
+    notification.setRecipientId(recipientId);
+    notification.setContent(content);
+    ticketMessageRepository.save(notification);
   }
 
   @Override
   public List<NotificationResponseDTO> getUnread() {
     Long userId = authService.getAuthenticatedUser().getId();
-    return ticketMessageService.findUnreadByRecipient(userId)
+    return ticketMessageRepository.findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId)
         .stream()
         .map(this::toDTO)
         .toList();
@@ -36,7 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
   @Override
   public List<NotificationResponseDTO> getAll() {
     Long userId = authService.getAuthenticatedUser().getId();
-    return ticketMessageService.findAllByRecipient(userId)
+    return ticketMessageRepository.findByRecipientIdOrderByCreatedAtDesc(userId)
         .stream()
         .map(this::toDTO)
         .toList();
@@ -45,10 +57,11 @@ public class NotificationServiceImpl implements NotificationService {
   @Override
   public NotificationSummaryDTO getPaginatedSummary(int page, int size) {
     Long userId = authService.getAuthenticatedUser().getId();
-    long unreadCount = ticketMessageService.countUnreadByRecipient(userId);
+    long unreadCount = ticketMessageRepository.countByRecipientIdAndIsReadFalse(userId);
     Pageable pageable = PageRequest.of(page, size);
-    List<NotificationResponseDTO> recentNotifications = ticketMessageService
-        .findUnreadByRecipientPaginated(userId, pageable)
+    List<NotificationResponseDTO> recentNotifications = ticketMessageRepository
+        .findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId, pageable)
+        .getContent()
         .stream()
         .map(this::toDTO)
         .toList();
@@ -57,17 +70,18 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   public void markAsRead(Long notificationId) {
-    TicketMessage notification = ticketMessageService.findNotificationById(notificationId);
+    TicketMessage notification = ticketMessageRepository.findById(notificationId)
+        .orElseThrow(() -> new ResourceNotFoundException("Notificación", "id", notificationId));
     notification.setIsRead(true);
-    ticketMessageService.saveNotification(notification);
+    ticketMessageRepository.save(notification);
   }
 
   @Override
   public void markAllAsRead() {
     Long userId = authService.getAuthenticatedUser().getId();
-    List<TicketMessage> unread = ticketMessageService.findUnreadByRecipient(userId);
+    List<TicketMessage> unread = ticketMessageRepository.findByRecipientIdAndIsReadFalse(userId);
     unread.forEach(n -> n.setIsRead(true));
-    ticketMessageService.saveAllNotifications(unread);
+    ticketMessageRepository.saveAll(unread);
   }
 
   private NotificationResponseDTO toDTO(TicketMessage n) {
