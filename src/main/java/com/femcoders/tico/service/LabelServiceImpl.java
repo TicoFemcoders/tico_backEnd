@@ -47,7 +47,6 @@ public class LabelServiceImpl implements LabelService {
     // .map(labelMapper::toResponseDto)
     // .toList();
     // }
-    
     @Override
     public List<LabelResDTO> getAllLabels() {
         return labelRepository.findAll().stream()
@@ -97,6 +96,14 @@ public class LabelServiceImpl implements LabelService {
         return (int) tickets.stream()
                 .filter(t -> t.getStatus() != TicketStatus.CLOSED)
                 .count();
+    }
+
+    @Override
+    public void activateLabel(Long id) {
+        Label label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
+        label.setIsActive(true);
+        labelRepository.save(label);
     }
 
     @Override
