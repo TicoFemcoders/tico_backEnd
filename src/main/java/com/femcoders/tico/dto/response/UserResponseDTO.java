@@ -9,7 +9,7 @@ public record UserResponseDTO(
         String email,
         Set<String> roles,
         Boolean isActive,
-        int openTickets,
+        long openTickets,
         LocalDateTime createdAt
         ) {
 

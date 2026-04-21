@@ -3,10 +3,11 @@ package com.femcoders.tico.service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 
 import com.femcoders.tico.dto.request.ActivationReqDTO;
 import com.femcoders.tico.entity.ActivationToken;
@@ -18,21 +19,15 @@ import com.femcoders.tico.repository.ActivationTokenRepository;
 import com.femcoders.tico.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class ActivationServiceImpl implements ActivationService {
 
   private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-  @Autowired
-  private ActivationTokenRepository tokenRepository;
-
-  @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-
-  @Autowired
-  private EmailService emailService;
+  private final ActivationTokenRepository tokenRepository;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final EmailService emailService;
 
   @Override
   @Transactional

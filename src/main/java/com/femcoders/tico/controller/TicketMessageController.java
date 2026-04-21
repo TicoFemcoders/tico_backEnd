@@ -42,9 +42,4 @@ public class TicketMessageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMessage(@PathVariable Long id) {
-        ticketMessageService.deleteMessage(id);
-        return ResponseEntity.noContent().build();
-    }
 }
