@@ -5,6 +5,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +25,8 @@ public class EmailService {
     private String mailFrom;
 
     public void sendActivationEmail(String toEmail, String userName, String code) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>Has sido invitado a <strong>TICO</strong> — plataforma de soporte de CoHispania.</p>" +
                 "<p style='margin-top:24px;'>Tu código de activación es:</p>" +
                 tmpl.code(code) +
@@ -37,7 +39,8 @@ public class EmailService {
     }
 
     public void sendResetEmail(String toEmail, String userName, String code) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en TICO.</p>" +
                 "<p style='margin-top:24px;'>Tu código de restablecimiento es:</p>" +
                 tmpl.code(code) +
@@ -51,56 +54,71 @@ public class EmailService {
     }
 
     public void sendTicketCreatedEmail(String toEmail, String userName, String emailSubject) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String safeSubject = HtmlUtils.htmlEscape(emailSubject);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>Tu ticket ha sido creado correctamente en TICO.</p>" +
-                "<p><strong>Referencia:</strong> " + emailSubject + "</p>" +
+                "<p><strong>Referencia:</strong> " + safeSubject + "</p>" +
                 "<p>Recibirás notificaciones en este mismo hilo cuando haya actualizaciones.</p>" +
                 tmpl.cta("Ir a TICO");
         send(toEmail, emailSubject, body);
     }
 
     public void sendPriorityChangedEmail(String toEmail, String userName, String emailSubject, String newPriority) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String safeSubject = HtmlUtils.htmlEscape(emailSubject);
+        String safePriority = HtmlUtils.htmlEscape(newPriority);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>La prioridad de tu ticket ha sido actualizada.</p>" +
-                "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
-                "<p><strong>Nueva prioridad:</strong> " + newPriority + "</p>" +
+                "<p><strong>Ticket:</strong> " + safeSubject + "</p>" +
+                "<p><strong>Nueva prioridad:</strong> " + safePriority + "</p>" +
                 tmpl.cta("Ir a TICO");
         send(toEmail, emailSubject, body);
     }
 
     public void sendStatusChangedEmail(String toEmail, String userName, String emailSubject, String newStatus) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String safeSubject = HtmlUtils.htmlEscape(emailSubject);
+        String safeStatus = HtmlUtils.htmlEscape(newStatus);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>El estado de tu ticket ha sido actualizado.</p>" +
-                "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
-                "<p><strong>Nuevo estado:</strong> " + newStatus + "</p>" +
+                "<p><strong>Ticket:</strong> " + safeSubject + "</p>" +
+                "<p><strong>Nuevo estado:</strong> " + safeStatus + "</p>" +
                 tmpl.cta("Ir a TICO");
         send(toEmail, emailSubject, body);
     }
 
     public void sendTicketClosedEmail(String toEmail, String userName, String emailSubject) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String safeSubject = HtmlUtils.htmlEscape(emailSubject);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>Tu ticket ha sido cerrado.</p>" +
-                "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+                "<p><strong>Ticket:</strong> " + safeSubject + "</p>" +
                 "<p>Si necesitas reabrir el ticket puedes hacerlo desde la plataforma.</p>" +
                 tmpl.cta("Ir a TICO");
         send(toEmail, emailSubject, body);
     }
 
     public void sendNewMessageEmail(String toEmail, String userName, String emailSubject, String messageContent) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String safeSubject = HtmlUtils.htmlEscape(emailSubject);
+        String safeContent = HtmlUtils.htmlEscape(messageContent);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>El equipo de soporte ha respondido a tu ticket.</p>" +
-                "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+                "<p><strong>Ticket:</strong> " + safeSubject + "</p>" +
                 "<p style='margin-top:16px;padding:12px 20px;background:#f9f9f9;border-left:3px solid #f28a2e;" +
                 "border-radius:4px;font-style:italic;color:#555;text-align:center;'>" +
-                "&ldquo;" + messageContent + "&rdquo;</p>" +
+                "&ldquo;" + safeContent + "&rdquo;</p>" +
                 tmpl.cta("Ir a TICO");
         send(toEmail, emailSubject, body);
     }
 
     public void sendTicketReopenedEmail(String toEmail, String userName, String emailSubject) {
-        String body = "<p>Hola <strong>" + userName + "</strong>,</p>" +
+        String safeUserName = HtmlUtils.htmlEscape(userName);
+        String safeSubject = HtmlUtils.htmlEscape(emailSubject);
+        String body = "<p>Hola <strong>" + safeUserName + "</strong>,</p>" +
                 "<p>Tu ticket ha sido reactivado y está de nuevo en seguimiento.</p>" +
-                "<p><strong>Ticket:</strong> " + emailSubject + "</p>" +
+                "<p><strong>Ticket:</strong> " + safeSubject + "</p>" +
                 "<p>El equipo de soporte revisará tu caso próximamente.</p>" +
                 tmpl.cta("Ir a TICO");
         send(toEmail, emailSubject, body);
