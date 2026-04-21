@@ -27,7 +27,7 @@ public interface UserMapper {
     User toEntity(AdminCreateUserReqDTO dto);
 
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
-    @Mapping(target = "openTickets", constant = "0")
+    @Mapping(target = "openTickets", constant = "0L")
     UserResponseDTO toResponseDTO(User entity);
 
     @Named("rolesToStrings")

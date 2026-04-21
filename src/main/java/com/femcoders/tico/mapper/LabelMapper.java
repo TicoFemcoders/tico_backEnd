@@ -7,7 +7,6 @@ import org.mapstruct.MappingTarget;
 import com.femcoders.tico.dto.request.LabelRequestDTO;
 import com.femcoders.tico.dto.response.LabelResponseDTO;
 import com.femcoders.tico.entity.Label;
-import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.utils.LabelMappingUtils;
 
 @Mapper(componentModel = "spring", uses = LabelMappingUtils.class)

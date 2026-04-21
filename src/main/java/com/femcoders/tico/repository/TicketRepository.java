@@ -24,8 +24,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
 
-    @Query("SELECT t.createdBy.id, COUNT(t) FROM Ticket t "
-            + "WHERE t.status <> com.femcoders.tico.enums.TicketStatus CLOSED " + "GROUP BY t.createdBy.id")
+    @Query("SELECT t.createdBy.id, COUNT(t) FROM Ticket t " +
+            "WHERE t.status <> com.femcoders.tico.enums.TicketStatus.CLOSED " +
+            "GROUP BY t.createdBy.id")
     List<Object[]> countOpenTicketsPerUser();
 
 }

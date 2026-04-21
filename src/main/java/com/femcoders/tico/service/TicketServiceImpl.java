@@ -16,6 +16,7 @@ import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
+import com.femcoders.tico.utils.TicketStatusHelper;
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 
@@ -157,13 +158,13 @@ public class TicketServiceImpl implements TicketService {
                                 ticket.getCreatedBy().getEmail(),
                                 ticket.getCreatedBy().getName(),
                                 ticket.getEmailSubject(),
-                                priorityToSpanish(priority));
+                                TicketStatusHelper.priorityToSpanish(priority));
 
                 notificationService.create(
                                 ticket.getId(),
                                 currentUser.getId(),
                                 ticket.getCreatedBy().getId(),
-                                "Prioridad actualizada a " + priorityToSpanish(priority) + ": "
+                                "Prioridad actualizada a " + TicketStatusHelper.priorityToSpanish(priority) + ": "
                                                 + ticket.getEmailSubject());
 
                 return ticketMapper.toResponseDTO(saved);
@@ -198,13 +199,13 @@ public class TicketServiceImpl implements TicketService {
                                 ticket.getCreatedBy().getEmail(),
                                 ticket.getCreatedBy().getName(),
                                 ticket.getEmailSubject(),
-                                statusToSpanish(status));
+                                TicketStatusHelper.statusToSpanish(status));
 
                 notificationService.create(
                                 ticket.getId(),
                                 currentUser.getId(),
                                 ticket.getCreatedBy().getId(),
-                                "Estado actualizado a " + statusToSpanish(status) + ": " + ticket.getEmailSubject());
+                                "Estado actualizado a " + TicketStatusHelper.statusToSpanish(status) + ": " + ticket.getEmailSubject());
 
                 return ticketMapper.toResponseDTO(saved);
         }
@@ -280,23 +281,6 @@ public class TicketServiceImpl implements TicketService {
                 }
 
                 return ticketMapper.toResponseDTO(saved);
-        }
-
-        private String priorityToSpanish(TicketPriority priority) {
-                return switch (priority) {
-                        case LOW -> "Baja";
-                        case MEDIUM -> "Media";
-                        case HIGH -> "Alta";
-                        case CRITICAL -> "Crítica";
-                };
-        }
-
-        private String statusToSpanish(TicketStatus status) {
-                return switch (status) {
-                        case OPEN -> "Abierto";
-                        case IN_PROGRESS -> "En progreso";
-                        case CLOSED -> "Cerrado";
-                };
         }
 
         private Ticket loadTicketForAssignedAdmin(Long ticketId) {
