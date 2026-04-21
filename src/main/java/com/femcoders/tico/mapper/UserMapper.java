@@ -23,7 +23,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "isActive", constant = "false")
+    @Mapping(target = "isActive", ignore = true)
     @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")
     void updateEntity(UpdateUserReqDTO dto, @MappingTarget User entity);
 
