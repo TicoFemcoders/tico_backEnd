@@ -40,6 +40,7 @@ public class TicketController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TicketResponseDTO>> getAllTickets() {
         return new ResponseEntity<>(ticketsService.getAllTickets(), HttpStatus.OK);
     }
