@@ -25,15 +25,9 @@ public class NotificationController {
   @GetMapping
   public ResponseEntity<NotificationSummaryDTO> getPaginatedNotifications(
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size
-    ) {
-      return ResponseEntity.ok(notificationService.getPaginatedSummary(page, size));
+      @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(notificationService.getPaginatedSummary(page, size));
   }
-  
-  // @GetMapping
-  // public ResponseEntity<List<NotificationResponseDTO>> getAll() {
-  //   return ResponseEntity.ok(notificationService.getAll());
-  // }
 
   @GetMapping("/unread")
   public ResponseEntity<List<NotificationResponseDTO>> getUnread() {
