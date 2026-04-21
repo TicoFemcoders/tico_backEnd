@@ -85,13 +85,4 @@ public class LabelServiceImpl implements LabelService {
     return labelMapper.toResponseDto(labelRepository.save(label));
   }
 
-  @Override
-public int countActiveTicketsByLabel(Long id) {
-    Label label = labelRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
-    return (int) label.getTickets().stream()
-            .filter(t -> t.getStatus() != TicketStatus.CLOSED)
-            .count();
-}
-
 }
