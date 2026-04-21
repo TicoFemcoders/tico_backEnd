@@ -2,9 +2,10 @@ package com.femcoders.tico.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("api/notifications")
+@RequiredArgsConstructor
 public class NotificationController {
 
-  @Autowired
-  private NotificationService notificationService;
+  private final NotificationService notificationService;
 
   @GetMapping
   public ResponseEntity<NotificationSummaryDTO> getPaginatedNotifications(

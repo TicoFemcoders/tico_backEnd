@@ -1,10 +1,11 @@
 package com.femcoders.tico.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -12,10 +13,10 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 
-  @Autowired
-  private JavaMailSender mailSender;
+  private final JavaMailSender mailSender;
 
   @Value("${app.mail.from}")
   private String mailFrom;

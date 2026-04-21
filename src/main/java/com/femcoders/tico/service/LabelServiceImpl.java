@@ -3,9 +3,10 @@ package com.femcoders.tico.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 
 import com.femcoders.tico.dto.request.LabelRequestDTO;
 import com.femcoders.tico.dto.response.LabelResponseDTO;
@@ -16,13 +17,11 @@ import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
 
 @Service
+@RequiredArgsConstructor
 public class LabelServiceImpl implements LabelService {
 
-  @Autowired
-  private LabelRepository labelRepository;
-
-  @Autowired
-  private LabelMapper labelMapper;
+  private final LabelRepository labelRepository;
+  private final LabelMapper labelMapper;
 
   @Override
   public LabelResponseDTO createLabel(LabelRequestDTO dto) {

@@ -1,8 +1,9 @@
 package com.femcoders.tico.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,10 +16,10 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/activation")
+@RequiredArgsConstructor
 public class ActivationController {
 
-  @Autowired
-  private ActivationService activationService;
+  private final ActivationService activationService;
 
   @PostMapping("/activate")
   public ResponseEntity<Void> activate(@Valid @RequestBody ActivationReqDTO dto) {

@@ -3,7 +3,6 @@ package com.femcoders.tico.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,27 +23,30 @@ import com.femcoders.tico.repository.UserRepository;
 @Service
 public class TicketMessageServiceImpl implements TicketMessageService {
 
-    @Autowired
-    private TicketMessageRepository ticketMessageRepository;
+    private final TicketMessageRepository ticketMessageRepository;
+    private final TicketMessageMapper ticketMessageMapper;
+    private final TicketRepository ticketRepository;
+    private final EmailService emailService;
+    private final AuthService authService;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private TicketMessageMapper ticketMessageMapper;
-
-    @Autowired
-    private TicketRepository ticketRepository;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    @Lazy
-    private NotificationService notificationService;
+    public TicketMessageServiceImpl(
+            TicketMessageRepository ticketMessageRepository,
+            TicketMessageMapper ticketMessageMapper,
+            TicketRepository ticketRepository,
+            EmailService emailService,
+            AuthService authService,
+            UserRepository userRepository,
+            @Lazy NotificationService notificationService) {
+        this.ticketMessageRepository = ticketMessageRepository;
+        this.ticketMessageMapper = ticketMessageMapper;
+        this.ticketRepository = ticketRepository;
+        this.emailService = emailService;
+        this.authService = authService;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
+    }
 
     @Override
     public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId) {

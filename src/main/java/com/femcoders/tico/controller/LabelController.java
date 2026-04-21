@@ -3,9 +3,10 @@ package com.femcoders.tico.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,10 +25,10 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/labels")
+@RequiredArgsConstructor
 public class LabelController {
 
-    @Autowired
-    private LabelService labelService;
+    private final LabelService labelService;
 
     @PostMapping
     public ResponseEntity<LabelResponseDTO> createLabel(@Valid @RequestBody LabelRequestDTO dto) {

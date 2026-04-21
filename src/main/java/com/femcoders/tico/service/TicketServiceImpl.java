@@ -2,7 +2,6 @@ package com.femcoders.tico.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
@@ -20,29 +19,19 @@ import com.femcoders.tico.repository.LabelRepository;
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
-    @Autowired
-    private TicketRepository ticketsRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private LabelRepository labelRepository;
-
-    @Autowired
-    private TicketMapper ticketMapper;
-
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private NotificationService notificationService;
+    private final TicketRepository ticketsRepository;
+    private final UserRepository userRepository;
+    private final LabelRepository labelRepository;
+    private final TicketMapper ticketMapper;
+    private final AuthService authService;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Override
     public TicketResponseDTO createTicket(TicketCreateReqDTO dto) {
@@ -307,7 +296,6 @@ public class TicketServiceImpl implements TicketService {
         }
 
         return ticketMapper.toResponseDTO(saved);
-
     }
 
     private String priorityToSpanish(TicketPriority priority) {

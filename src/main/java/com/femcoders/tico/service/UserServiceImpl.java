@@ -5,11 +5,12 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
 import com.femcoders.tico.dto.request.UpdateUserReqDTO;
@@ -28,27 +29,17 @@ import com.femcoders.tico.security.UserDetail;
 import jakarta.transaction.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private ActivationService activationService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private TicketRepository ticketRepository;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final ActivationService activationService;
+    private final EmailService emailService;
+    private final TicketRepository ticketRepository;
 
     @Override
     @Transactional
