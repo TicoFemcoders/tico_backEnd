@@ -58,15 +58,8 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
     @Override
     public TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
-
         User currentUser = authService.getAuthenticatedUser();
-        if (currentUser.getRoles().contains(UserRole.ADMIN)
-                && ticket.getAssignedTo() != null
-                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
-            throw new BadRequestException("Solo el admin asignado puede escribir en la conversación de este ticket");
-        }
+        Ticket ticket = loadTicketForAuthorizedUser(ticketId, currentUser);
 
         TicketMessage message = ticketMessageMapper.toEntity(dto);
         message.setTicketId(ticketId);
@@ -157,6 +150,17 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     @Override
     public void saveAllNotifications(List<TicketMessage> notifications) {
         ticketMessageRepository.saveAll(notifications);
+    }
+
+    private Ticket loadTicketForAuthorizedUser(Long ticketId, User currentUser) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+        if (currentUser.getRoles().contains(UserRole.ADMIN)
+                && ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede escribir en este ticket");
+        }
+        return ticket;
     }
 
 }
