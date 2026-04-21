@@ -7,14 +7,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
 import com.femcoders.tico.dto.request.UpdateUserReqDTO;
 import com.femcoders.tico.dto.response.UserResponseDTO;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
+import com.femcoders.tico.exception.InvalidIdException;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -53,8 +52,7 @@ public interface UserMapper {
                     try {
                         return UserRole.valueOf(roleStr);
                     } catch (IllegalArgumentException e) {
-                        throw new ResponseStatusException(
-                                HttpStatus.BAD_REQUEST,
+                        throw new InvalidIdException(
                                 "Rol inválido: " + roleStr + ". Valores aceptados: ADMIN, EMPLOYEE");
                     }
                 })
