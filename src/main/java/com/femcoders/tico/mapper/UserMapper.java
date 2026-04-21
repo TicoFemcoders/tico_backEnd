@@ -7,8 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
 import com.femcoders.tico.dto.request.UpdateUserReqDTO;
@@ -24,13 +22,12 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
-    @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")
     void updateEntity(UpdateUserReqDTO dto, @MappingTarget User entity);
 
     User toEntity(AdminCreateUserReqDTO dto);
 
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
-    @Mapping(target = "openTickets", constant = "0")
+    @Mapping(target = "openTickets", constant = "0L")
     UserResponseDTO toResponseDTO(User entity);
 
     @Named("rolesToStrings")
@@ -40,24 +37,6 @@ public interface UserMapper {
         }
         return roles.stream()
                 .map(role -> "ROLE_" + role.name())
-                .collect(Collectors.toSet());
-    }
-
-    @Named("stringsToRoles")
-    default Set<UserRole> stringsToRoles(Set<String> rolesStrings) {
-        if (rolesStrings == null || rolesStrings.isEmpty()) {
-            return Set.of();
-        }
-        return rolesStrings.stream()
-                .map(roleStr -> {
-                    try {
-                        return UserRole.valueOf(roleStr);
-                    } catch (IllegalArgumentException e) {
-                        throw new ResponseStatusException(
-                                HttpStatus.BAD_REQUEST,
-                                "Rol inválido: " + roleStr + ". Valores aceptados: ADMIN, EMPLOYEE");
-                    }
-                })
                 .collect(Collectors.toSet());
     }
 

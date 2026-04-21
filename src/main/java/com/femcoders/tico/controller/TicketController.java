@@ -2,9 +2,11 @@ package com.femcoders.tico.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,10 +27,10 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/tickets")
+@RequiredArgsConstructor
 public class TicketController {
 
-    @Autowired
-    private TicketService ticketsService;
+    private final TicketService ticketsService;
 
     @PostMapping
     public ResponseEntity<TicketResponseDTO> createTicket(
@@ -38,6 +40,7 @@ public class TicketController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TicketResponseDTO>> getAllTickets() {
         return new ResponseEntity<>(ticketsService.getAllTickets(), HttpStatus.OK);
     }
@@ -53,6 +56,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/assign-admin")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> assignAdmin(
             @PathVariable Long id,
             @RequestParam Long adminId) {
@@ -60,6 +64,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/priority")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> changePriority(
             @PathVariable Long id,
             @RequestParam TicketPriority priority) {
@@ -67,6 +72,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> changeStatus(
             @PathVariable Long id,
             @RequestParam TicketStatus status) {
@@ -74,6 +80,7 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/close")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> closeTicket(
             @PathVariable Long id,
             @RequestParam(required = false) String closingMessage) {
@@ -86,6 +93,7 @@ public class TicketController {
     }
 
     @PostMapping("/{id}/labels/{labelId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> assignLabel(
             @PathVariable Long id,
             @PathVariable Long labelId) {
@@ -93,6 +101,7 @@ public class TicketController {
     }
 
     @DeleteMapping("/{id}/labels/{labelId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> removeLabel(
             @PathVariable Long id,
             @PathVariable Long labelId) {
