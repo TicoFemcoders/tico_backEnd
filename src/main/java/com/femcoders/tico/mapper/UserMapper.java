@@ -13,7 +13,6 @@ import com.femcoders.tico.dto.request.UpdateUserReqDTO;
 import com.femcoders.tico.dto.response.UserResponseDTO;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
-import com.femcoders.tico.exception.InvalidIdException;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -23,7 +22,6 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
-    @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")
     void updateEntity(UpdateUserReqDTO dto, @MappingTarget User entity);
 
     User toEntity(AdminCreateUserReqDTO dto);
@@ -39,23 +37,6 @@ public interface UserMapper {
         }
         return roles.stream()
                 .map(role -> "ROLE_" + role.name())
-                .collect(Collectors.toSet());
-    }
-
-    @Named("stringsToRoles")
-    default Set<UserRole> stringsToRoles(Set<String> rolesStrings) {
-        if (rolesStrings == null || rolesStrings.isEmpty()) {
-            return Set.of();
-        }
-        return rolesStrings.stream()
-                .map(roleStr -> {
-                    try {
-                        return UserRole.valueOf(roleStr);
-                    } catch (IllegalArgumentException e) {
-                        throw new InvalidIdException(
-                                "Rol inválido: " + roleStr + ". Valores aceptados: ADMIN, EMPLOYEE");
-                    }
-                })
                 .collect(Collectors.toSet());
     }
 
