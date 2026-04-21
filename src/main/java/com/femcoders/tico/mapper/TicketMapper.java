@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
+import com.femcoders.tico.dto.response.LabelSummaryDTO;
 import com.femcoders.tico.dto.response.TicketResponseDTO;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Ticket;
@@ -28,17 +29,17 @@ public interface TicketMapper {
 
     @Mapping(target = "createdByName", source = "createdBy.name")
     @Mapping(target = "assignedToName", source = "assignedTo.name")
-    @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToNames")
+    @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToSummaries")
     @Mapping(target = "closingMessage", source = "closingMessage")
     TicketResponseDTO toResponseDTO(Ticket entity);
 
-    @Named("labelsToNames")
-    default Set<String> labelsToNames(Set<Label> labels) {
+    @Named("labelsToSummaries")
+    default Set<LabelSummaryDTO> labelsToSummaries(Set<Label> labels) {
         if (labels == null) {
             return Set.of();
         }
         return labels.stream()
-                .map(Label::getName)
+                .map(l -> new LabelSummaryDTO(l.getName(), l.getColor()))
                 .collect(Collectors.toSet());
     }
 }
