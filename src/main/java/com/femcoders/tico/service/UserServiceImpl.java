@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import java.util.Map;
+
+import com.femcoders.tico.exception.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final ActivationService activationService;
     private final EmailService emailService;
     private final TicketRepository ticketRepository;
+    private final AuthService authService;
 
     @Override
     @Transactional
@@ -130,10 +133,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO updateUser(Long id, UpdateUserReqDTO dto) {
-        User user = userRepository.findById(id)
+        User currentUser = authService.getAuthenticatedUser();
+
+        if (currentUser.getId().equals(id) && !dto.roles().contains(UserRole.ADMIN)) {
+            throw new BadRequestException("No puedes eliminarte el rol de administrador");
+        }
+
+        User target = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
-        userMapper.updateEntity(dto, user);
-        return userMapper.toResponseDTO(userRepository.save(user));
+
+        if (target.getRoles().contains(UserRole.ADMIN)
+                && !dto.roles().contains(UserRole.ADMIN)
+                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
+            throw new ConflictException("No puedes degradar al único administrador del sistema");
+        }
+
+        userMapper.updateEntity(dto, target);
+        return userMapper.toResponseDTO(userRepository.save(target));
     }
 
     @Override
