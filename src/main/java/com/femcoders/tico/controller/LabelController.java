@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.LabelReqDTO;
-import com.femcoders.tico.dto.response.LabelResDTO;
+import com.femcoders.tico.dto.request.LabelRequestDTO;
+import com.femcoders.tico.dto.response.LabelResponseDTO;
 import com.femcoders.tico.service.LabelService;
 
 import jakarta.validation.Valid;
@@ -30,24 +30,24 @@ public class LabelController {
     private LabelService labelService;
 
     @PostMapping
-    public ResponseEntity<LabelResDTO> createLabel(@Valid @RequestBody LabelReqDTO dto) {
+    public ResponseEntity<LabelResponseDTO> createLabel(@Valid @RequestBody LabelRequestDTO dto) {
         return new ResponseEntity<>(labelService.createLabel(dto), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<LabelResDTO>> getAllLabels() {
+    public ResponseEntity<List<LabelResponseDTO>> getAllLabels() {
         return ResponseEntity.ok(labelService.getAllLabels());
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<LabelResDTO>> searchLabels(@RequestParam String name) {
+    public ResponseEntity<List<LabelResponseDTO>> searchLabels(@RequestParam String name) {
         return ResponseEntity.ok(labelService.filterLabelsByName(name));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LabelResDTO> updateLabel(
+    public ResponseEntity<LabelResponseDTO> updateLabel(
             @PathVariable Long id,
-            @RequestBody LabelReqDTO dto) {
+            @RequestBody LabelRequestDTO dto) {
         return ResponseEntity.ok(labelService.updateLabel(id, dto));
     }
 
@@ -58,7 +58,7 @@ public class LabelController {
     }
 
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<LabelResDTO> activateLabel(@PathVariable Long id) {
+    public ResponseEntity<LabelResponseDTO> activateLabel(@PathVariable Long id) {
         return ResponseEntity.ok(labelService.activateLabel(id));
     }
 }

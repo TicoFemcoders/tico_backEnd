@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.femcoders.tico.dto.request.LabelReqDTO;
-import com.femcoders.tico.dto.response.LabelResDTO;
+import com.femcoders.tico.dto.request.LabelRequestDTO;
+import com.femcoders.tico.dto.response.LabelResponseDTO;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.ResourceNotFoundException;
@@ -25,7 +25,7 @@ public class LabelServiceImpl implements LabelService {
   private LabelMapper labelMapper;
 
   @Override
-  public LabelResDTO createLabel(LabelReqDTO dto) {
+  public LabelResponseDTO createLabel(LabelRequestDTO dto) {
 
     if (labelRepository.existsByName(dto.name())) {
       throw new IllegalStateException("La etiqueta '" + dto.name() + "' ya existe");
@@ -38,21 +38,21 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
-  public List<LabelResDTO> getAllLabels() {
+  public List<LabelResponseDTO> getAllLabels() {
     return labelRepository.findAll().stream()
         .map(labelMapper::toResponseDto)
         .toList();
   }
 
   @Override
-  public List<LabelResDTO> filterLabelsByName(String name) {
+  public List<LabelResponseDTO> filterLabelsByName(String name) {
     return labelRepository.findByNameContainingIgnoreCase(name).stream()
         .map(labelMapper::toResponseDto)
         .toList();
   }
 
   @Override
-  public LabelResDTO updateLabel(Long id, LabelReqDTO dto) {
+  public LabelResponseDTO updateLabel(Long id, LabelRequestDTO dto) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
     labelMapper.updateEntity(dto, label);
@@ -77,7 +77,7 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
-  public LabelResDTO activateLabel(Long id) {
+  public LabelResponseDTO activateLabel(Long id) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
     label.setIsActive(true);
