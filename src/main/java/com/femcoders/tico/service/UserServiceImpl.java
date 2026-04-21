@@ -2,7 +2,9 @@ package com.femcoders.tico.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -61,17 +63,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
+        Map<Long, Long> openCounts = ticketRepository.countOpenTicketsPerUser()
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]));
+
         return userRepository.findAll()
                 .stream()
                 .map(user -> {
-                    UserResponseDTO dto = userMapper.toResponseDTO(user);
-                    int openTickets = (int) ticketRepository.findByCreatedById(user.getId())
-                            .stream()
-                            .filter(t -> t.getStatus() != com.femcoders.tico.enums.TicketStatus.CLOSED)
-                            .count();
+                    UserResponseDTO base = userMapper.toResponseDTO(user);
+                    long open = openCounts.getOrDefault(user.getId(), 0L);
                     return new UserResponseDTO(
-                            dto.id(), dto.name(), dto.email(), dto.roles(),
-                            dto.isActive(), openTickets, dto.createdAt());
+                            base.id(), base.name(), base.email(),
+                            base.roles(), base.isActive(), open, base.createdAt());
                 })
                 .toList();
     }
