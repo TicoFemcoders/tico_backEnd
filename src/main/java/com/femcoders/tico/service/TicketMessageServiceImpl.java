@@ -1,5 +1,6 @@
 package com.femcoders.tico.service;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,13 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
     @Override
     public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId) {
+        User currentUser = authService.getAuthenticatedUser();
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+        if (currentUser.getRoles().contains(UserRole.EMPLOYEE)
+                && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("No tienes acceso a los mensajes de este ticket");
+        }
         return ticketMessageRepository.findByTicketId(ticketId)
                 .stream()
                 .map(ticketMessageMapper::toResponseDTO)
