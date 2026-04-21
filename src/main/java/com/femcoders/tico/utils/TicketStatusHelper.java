@@ -13,7 +13,7 @@ public final class TicketStatusHelper {
       case LOW -> "Baja";
       case MEDIUM -> "Media";
       case HIGH -> "Alta";
-      case CRITICAL -> "Crítica";
+      case CRITICAL -> "Urgente";
     };
   }
 

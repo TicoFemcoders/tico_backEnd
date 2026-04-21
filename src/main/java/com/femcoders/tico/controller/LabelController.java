@@ -3,6 +3,7 @@ package com.femcoders.tico.controller;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ public class LabelController {
     private final LabelService labelService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LabelResponseDTO> createLabel(@Valid @RequestBody LabelRequestDTO dto) {
         return new ResponseEntity<>(labelService.createLabel(dto), HttpStatus.CREATED);
     }
@@ -44,6 +46,7 @@ public class LabelController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LabelResponseDTO> updateLabel(
             @PathVariable Long id,
             @RequestBody LabelRequestDTO dto) {
@@ -51,12 +54,14 @@ public class LabelController {
     }
 
     @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deactivateLabel(@PathVariable Long id) {
         labelService.deactivateLabel(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LabelResponseDTO> activateLabel(@PathVariable Long id) {
         return ResponseEntity.ok(labelService.activateLabel(id));
     }
