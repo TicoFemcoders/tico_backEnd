@@ -57,15 +57,14 @@ public class LabelController {
         return ResponseEntity.ok(labelService.updateLabel(id, dto));
     }
 
-    @PatchMapping("/{id}/activate")
-    public ResponseEntity<Void> activateLabel(@PathVariable Long id) {
-        labelService.activateLabel(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivateLabel(@PathVariable Long id) {
         labelService.deactivateLabel(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<LabelResDTO> activateLabel(@PathVariable Long id) {
+        return ResponseEntity.ok(labelService.activateLabel(id));
     }
 }

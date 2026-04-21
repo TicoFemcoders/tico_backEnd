@@ -62,33 +62,30 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         message.setAuthor(currentUser);
         TicketMessage saved = ticketMessageRepository.save(message);
 
-        if (!Boolean.TRUE.equals(dto.isInternal())) {
-            boolean authorIsAssignedAdmin = ticket.getAssignedTo() != null
-                    && ticket.getAssignedTo().getId().equals(currentUser.getId());
+        boolean authorIsAssignedAdmin = ticket.getAssignedTo() != null
+                && ticket.getAssignedTo().getId().equals(currentUser.getId());
 
-            if (authorIsAssignedAdmin) {
-                emailService.sendNewMessageEmail(
-                        ticket.getCreatedBy().getEmail(),
-                        ticket.getCreatedBy().getName(),
-                        ticket.getEmailSubject(),
-                        saved.getContent());
+        if (authorIsAssignedAdmin) {
+            emailService.sendNewMessageEmail(
+                    ticket.getCreatedBy().getEmail(),
+                    ticket.getCreatedBy().getName(),
+                    ticket.getEmailSubject(),
+                    saved.getContent());
 
-                notificationService.create(
-                        ticket.getId(),
-                        currentUser.getId(),
-                        ticket.getCreatedBy().getId(),
-                        "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
-            }
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getCreatedBy().getId(),
+                    "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
+        }
 
-            boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
-            if (authorIsCreator && ticket.getAssignedTo() != null) {
-                notificationService.create(
-                        ticket.getId(),
-                        currentUser.getId(),
-                        ticket.getAssignedTo().getId(),
-                        "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
-            }
-
+        boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
+        if (authorIsCreator && ticket.getAssignedTo() != null) {
+            notificationService.create(
+                    ticket.getId(),
+                    currentUser.getId(),
+                    ticket.getAssignedTo().getId(),
+                    "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
         }
 
         return ticketMessageMapper.toResponseDTO(saved);

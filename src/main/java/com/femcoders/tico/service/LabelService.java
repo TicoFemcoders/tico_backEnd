@@ -17,8 +17,8 @@ public interface LabelService {
 
     int countActiveTicketsByLabel(Long id);
 
-    void activateLabel(Long id);
-
     void deactivateLabel(Long id);
+
+    LabelResDTO activateLabel(Long id);
 
 }
