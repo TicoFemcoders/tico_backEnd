@@ -9,32 +9,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.femcoders.tico.dto.request.ResetPasswordConfirmDTO;
 import com.femcoders.tico.dto.request.ResetPasswordReqDTO;
-import com.femcoders.tico.service.ResetPasswordService;
+import com.femcoders.tico.service.AuthService;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/reset-password")
-public class ResetPasswordController {
+public class AuthController {
 
   @Autowired
-  private ResetPasswordService resetPasswordService;
+  private AuthService authService;
 
   @PostMapping("/request")
   public ResponseEntity<Void> requestReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
-    resetPasswordService.requestReset(dto.email());
+    authService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/confirm")
   public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirmDTO dto) {
-    resetPasswordService.confirmReset(dto);
+    authService.confirmReset(dto);
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/resend")
   public ResponseEntity<Void> resendReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
-    resetPasswordService.requestReset(dto.email());
+    authService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 }
