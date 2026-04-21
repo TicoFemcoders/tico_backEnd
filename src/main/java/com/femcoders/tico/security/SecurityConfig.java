@@ -3,7 +3,6 @@ package com.femcoders.tico.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -47,24 +46,14 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                                                 .requestMatchers("/login").permitAll()
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/api/activation/**").permitAll()
                                                 .requestMatchers("/api/reset-password/**").permitAll()
-                                                // .requestMatchers("/api/**").hasAnyRole("EMPLOYEE")
-                                                // .requestMatchers("/api/**").hasRole("ADMIN")
-                                                // .requestMatchers(HttpMethod.GET, "/api").authenticated()
-                                                // .requestMatchers("/api/**").hasRole("ADMIN")
-                                                // .requestMatchers("/api/**").authenticated()
                                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
-                                                // .requestMatchers("/api/tickets/**").permitAll() // para probar sin
-                                                // autentificar en swagger
                                                 .requestMatchers("/api/labels/**").permitAll()
-                                                .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
-                                                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                                                 .anyRequest().authenticated())
                                 .addFilter(authenticationFilter)
                                 .addFilterAfter(

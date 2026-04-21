@@ -12,10 +12,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
+import com.femcoders.tico.dto.request.UpdateUserReqDTO;
 import com.femcoders.tico.dto.response.UserResponseDTO;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
+import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.UserMapper;
@@ -66,8 +68,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponseDTO(savedUser);
     }
 
-
-      @Override
+    @Override
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -84,26 +85,30 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
-     @Override
+    @Override
     @Transactional
     public void deleteUser(Long userId, String reassignEmail) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
- 
-        List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId);
- 
+
+        List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId)
+                .stream()
+                .filter(t -> t.getStatus() != com.femcoders.tico.enums.TicketStatus.CLOSED)
+                .toList();
+
         if (!activeTickets.isEmpty()) {
             if (reassignEmail == null || reassignEmail.isBlank()) {
                 throw new ConflictException(
-                        "El usuario tiene " + activeTickets.size() + " tickets abiertos. Proporciona un email para reasignarlos.");
+                        "El usuario tiene " + activeTickets.size()
+                                + " tickets abiertos. Proporciona un email para reasignarlos.");
             }
             User newOwner = userRepository.findByEmail(reassignEmail)
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
- 
+
             activeTickets.forEach(t -> t.setCreatedBy(newOwner));
             ticketRepository.saveAll(activeTickets);
         }
- 
+
         userRepository.delete(user);
     }
 
@@ -112,5 +117,34 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .map(UserDetail::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+    }
+
+    @Override
+    public List<UserResponseDTO> getAllAdmins() {
+        return userRepository.findByRolesContaining(UserRole.ADMIN)
+                .stream().map(userMapper::toResponseDTO).toList();
+    }
+
+    @Override
+    public UserResponseDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
+        return userMapper.toResponseDTO(user);
+    }
+
+    @Override
+    public UserResponseDTO updateUser(Long id, UpdateUserReqDTO dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
+        userMapper.updateEntity(dto, user);
+        return userMapper.toResponseDTO(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDTO toggleUserActive(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
+        user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
+        return userMapper.toResponseDTO(userRepository.save(user));
     }
 }

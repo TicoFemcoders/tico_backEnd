@@ -44,12 +44,6 @@ public class LabelController {
         return ResponseEntity.ok(labelService.filterLabelsByName(name));
     }
 
-    @GetMapping("/{id}/active-tickets-count")
-    public ResponseEntity<Map<String, Integer>> countActiveTickets(@PathVariable Long id) {
-        int count = labelService.countActiveTicketsByLabel(id);
-        return ResponseEntity.ok(Map.of("activeTickets", count));
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<LabelResDTO> updateLabel(
             @PathVariable Long id,
