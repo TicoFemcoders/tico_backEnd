@@ -5,11 +5,13 @@ import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
+import com.femcoders.tico.dto.request.UpdateUserReqDTO;
 import com.femcoders.tico.dto.response.UserResponseDTO;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
@@ -23,6 +25,8 @@ public interface UserMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", constant = "false")
     @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")
+    void updateEntity(UpdateUserReqDTO dto, @MappingTarget User entity);
+
     User toEntity(AdminCreateUserReqDTO dto);
 
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
