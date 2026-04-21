@@ -62,6 +62,9 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // .requestMatchers("/api/tickets/**").permitAll() // para probar sin
                                                 // autentificar en swagger
+                                                .requestMatchers("/api/labels/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                                                 .anyRequest().authenticated())
                                 .addFilter(authenticationFilter)
                                 .addFilterAfter(

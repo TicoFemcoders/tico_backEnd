@@ -1,5 +1,6 @@
 package com.femcoders.tico.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -12,9 +13,13 @@ import org.springframework.stereotype.Service;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
 import com.femcoders.tico.dto.response.UserResponseDTO;
+import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
+import com.femcoders.tico.exception.ConflictException;
+import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.UserMapper;
+import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 import com.femcoders.tico.security.UserDetail;
 
@@ -40,6 +45,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private TicketRepository ticketRepository;
+
     @Override
     @Transactional
     public UserResponseDTO createUser(AdminCreateUserReqDTO userDto) {
@@ -56,6 +64,47 @@ public class UserServiceImpl implements UserService {
         }
 
         return userMapper.toResponseDTO(savedUser);
+    }
+
+
+      @Override
+    public List<UserResponseDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> {
+                    UserResponseDTO dto = userMapper.toResponseDTO(user);
+                    int openTickets = (int) ticketRepository.findByCreatedById(user.getId())
+                            .stream()
+                            .filter(t -> t.getStatus() != com.femcoders.tico.enums.TicketStatus.CLOSED)
+                            .count();
+                    return new UserResponseDTO(
+                            dto.id(), dto.name(), dto.email(), dto.roles(),
+                            dto.isActive(), openTickets, dto.createdAt());
+                })
+                .toList();
+    }
+
+     @Override
+    @Transactional
+    public void deleteUser(Long userId, String reassignEmail) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+ 
+        List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId);
+ 
+        if (!activeTickets.isEmpty()) {
+            if (reassignEmail == null || reassignEmail.isBlank()) {
+                throw new ConflictException(
+                        "El usuario tiene " + activeTickets.size() + " tickets abiertos. Proporciona un email para reasignarlos.");
+            }
+            User newOwner = userRepository.findByEmail(reassignEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+ 
+            activeTickets.forEach(t -> t.setCreatedBy(newOwner));
+            ticketRepository.saveAll(activeTickets);
+        }
+ 
+        userRepository.delete(user);
     }
 
     @Override
