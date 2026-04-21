@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public record NotificationResponseDTO(
     Long id,
     Long ticketId,
-    String Content,
+    String content,
     Boolean isRead,
     LocalDateTime createdAt) {
 

@@ -1,5 +1,13 @@
 package com.femcoders.tico.service;
 
+import org.springframework.security.access.AccessDeniedException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+
 import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
 import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
 import com.femcoders.tico.entity.Ticket;
@@ -11,34 +19,27 @@ import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMessageMapper;
 import com.femcoders.tico.repository.TicketMessageRepository;
 import com.femcoders.tico.repository.TicketRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TicketMessageServiceImpl implements TicketMessageService {
 
-    @Autowired
-    private TicketMessageRepository ticketMessageRepository;
-
-    @Autowired
-    private TicketMessageMapper ticketMessageMapper;
-
-    @Autowired
-    private TicketRepository ticketRepository;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private NotificationService notificationService;
+    private final TicketMessageRepository ticketMessageRepository;
+    private final TicketMessageMapper ticketMessageMapper;
+    private final TicketRepository ticketRepository;
+    private final EmailService emailService;
+    private final AuthService authService;
+    private final NotificationService notificationService;
 
     @Override
     public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId) {
+        User currentUser = authService.getAuthenticatedUser();
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+        if (currentUser.getRoles().contains(UserRole.EMPLOYEE)
+                && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("No tienes acceso a los mensajes de este ticket");
+        }
         return ticketMessageRepository.findByTicketId(ticketId)
                 .stream()
                 .map(ticketMessageMapper::toResponseDTO)
@@ -47,15 +48,8 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
     @Override
     public TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto) {
-        Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
-
         User currentUser = authService.getAuthenticatedUser();
-        if (currentUser.getRoles().contains(UserRole.ADMIN)
-                && ticket.getAssignedTo() != null
-                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
-            throw new BadRequestException("Solo el admin asignado puede escribir en la conversación de este ticket");
-        }
+        Ticket ticket = loadTicketForAuthorizedUser(ticketId, currentUser);
 
         TicketMessage message = ticketMessageMapper.toEntity(dto);
         message.setTicketId(ticketId);
@@ -96,4 +90,18 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         ticketMessageRepository.deleteById(id);
     }
 
+    private Ticket loadTicketForAuthorizedUser(Long ticketId, User currentUser) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+        if (currentUser.getRoles().contains(UserRole.EMPLOYEE)
+                && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Solo el creador del ticket puede responder en él");
+        }
+        if (currentUser.getRoles().contains(UserRole.ADMIN)
+                && ticket.getAssignedTo() != null
+                && !ticket.getAssignedTo().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("Solo el admin asignado puede escribir en este ticket");
+        }
+        return ticket;
+    }
 }

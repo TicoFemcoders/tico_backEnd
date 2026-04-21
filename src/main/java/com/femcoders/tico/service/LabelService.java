@@ -2,22 +2,21 @@ package com.femcoders.tico.service;
 
 import java.util.List;
 
-import com.femcoders.tico.dto.request.LabelReqDTO;
-import com.femcoders.tico.dto.response.LabelResDTO;
-
+import com.femcoders.tico.dto.request.LabelRequestDTO;
+import com.femcoders.tico.dto.response.LabelResponseDTO;
 
 public interface LabelService {
 
-    public LabelResDTO createLabel(LabelReqDTO dto);
+    public LabelResponseDTO createLabel(LabelRequestDTO dto);
 
-    List<LabelResDTO> getAllLabels();
+    public List<LabelResponseDTO> getAllLabels();
 
-    List<LabelResDTO> filterLabelsByName(String name);
+    public List<LabelResponseDTO> filterLabelsByName(String name);
 
-    LabelResDTO updateLabel(Long id, LabelReqDTO labelDTO);
+    public LabelResponseDTO updateLabel(Long id, LabelRequestDTO labelDTO);
 
-    void deactivateLabel(Long id);
+    public void deactivateLabel(Long id);
 
-    LabelResDTO activateLabel(Long id);
+    public LabelResponseDTO activateLabel(Long id);
 
 }

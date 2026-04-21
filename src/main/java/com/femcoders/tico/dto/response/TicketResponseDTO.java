@@ -14,7 +14,7 @@ public record TicketResponseDTO(
     TicketPriority priority,
     String createdByName,
     String assignedToName,
-    Set<String> labels,
+    Set<LabelSummaryDTO> labels,
     String emailSubject,
     String closingMessage,
     LocalDateTime createdAt,

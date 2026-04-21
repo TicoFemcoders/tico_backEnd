@@ -3,6 +3,7 @@ package com.femcoders.tico.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.femcoders.tico.entity.Ticket;
@@ -22,5 +23,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByLabelsId(Long labelId);
 
     List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
+
+    @Query("SELECT t.createdBy.id, COUNT(t) FROM Ticket t " +
+            "WHERE t.status <> com.femcoders.tico.enums.TicketStatus.CLOSED " +
+            "GROUP BY t.createdBy.id")
+    List<Object[]> countOpenTicketsPerUser();
 
 }

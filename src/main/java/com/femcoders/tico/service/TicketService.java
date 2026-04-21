@@ -9,27 +9,27 @@ import com.femcoders.tico.enums.TicketStatus;
 
 public interface TicketService {
 
-    TicketResponseDTO createTicket(TicketCreateReqDTO dto);
+    public TicketResponseDTO createTicket(TicketCreateReqDTO dto);
 
-    List<TicketResponseDTO> getAllTickets();
+    public List<TicketResponseDTO> getAllTickets();
 
-    List<TicketResponseDTO> getTicketsByUser();
+    public List<TicketResponseDTO> getTicketsByUser();
 
-    List<TicketResponseDTO> getTicketsByAdmin();
+    public List<TicketResponseDTO> getTicketsByAdmin();
 
-    TicketResponseDTO assignAdmin(Long ticketId, Long adminId);
+    public TicketResponseDTO assignAdmin(Long ticketId, Long adminId);
 
-    TicketResponseDTO assignLabel(Long ticketId, Long labelId);
+    public TicketResponseDTO assignLabel(Long ticketId, Long labelId);
 
-    TicketResponseDTO removeLabel(Long ticketId, Long labelId);
+    public TicketResponseDTO removeLabel(Long ticketId, Long labelId);
 
-    TicketResponseDTO changePriority(Long ticketId, TicketPriority priority);
+    public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority);
 
-    TicketResponseDTO closeTicket(Long ticketId, String closingMessage);
+    public TicketResponseDTO closeTicket(Long ticketId, String closingMessage);
 
-    TicketResponseDTO getTicketById(Long ticketId);
+    public TicketResponseDTO getTicketById(Long ticketId);
 
-    TicketResponseDTO changeStatus(Long ticketId, TicketStatus status);
+    public TicketResponseDTO changeStatus(Long ticketId, TicketStatus status);
 
-    TicketResponseDTO reopenTicket(Long ticketId);
+    public TicketResponseDTO reopenTicket(Long ticketId);
 }
