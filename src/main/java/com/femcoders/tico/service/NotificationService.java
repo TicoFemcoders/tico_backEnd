@@ -2,18 +2,19 @@ package com.femcoders.tico.service;
 
 import java.util.List;
 
-import com.femcoders.tico.dto.response.NotificationResponseDTO;
-import com.femcoders.tico.dto.response.NotificationSummaryDTO;
+import com.femcoders.tico.dto.response.NotificationResponse;
+import com.femcoders.tico.dto.NotificationSummary;
+import com.femcoders.tico.entity.User;
 
 public interface NotificationService {
 
-  public void create(Long ticketId, Long authorId, Long recipientId, String content);
+  public void create(Long ticketId, User author, Long recipientId, String content);
 
-  public List<NotificationResponseDTO> getUnread();
+  public List<NotificationResponse> getUnread();
 
-  public List<NotificationResponseDTO> getAll();
+  public List<NotificationResponse> getAll();
 
-  public NotificationSummaryDTO getPaginatedSummary(int page, int size);
+  public NotificationSummary getPaginatedSummary(int page, int size);
 
   public void markAsRead(Long notificationId);
 

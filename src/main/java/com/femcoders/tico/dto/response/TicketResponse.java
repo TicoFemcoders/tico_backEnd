@@ -6,7 +6,7 @@ import java.util.Set;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 
-public record TicketResponseDTO(
+public record TicketResponse(
     Long id,
     String title,
     String description,
@@ -14,7 +14,7 @@ public record TicketResponseDTO(
     TicketPriority priority,
     String createdByName,
     String assignedToName,
-    Set<LabelSummaryDTO> labels,
+    Set<LabelSummary> labels,
     String emailSubject,
     String closingMessage,
     LocalDateTime createdAt,

@@ -2,8 +2,8 @@ package com.femcoders.tico.mapper;
 
 import org.mapstruct.Mapper;
 
-import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
-import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
+import com.femcoders.tico.dto.request.TicketMessageRequest;
+import com.femcoders.tico.dto.response.TicketMessageResponse;
 import com.femcoders.tico.entity.TicketMessage;
 import org.mapstruct.Mapping;
 
@@ -16,9 +16,9 @@ public interface TicketMessageMapper {
     @Mapping(target = "isRead", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
 
-    TicketMessage toEntity(TicketMessageRequestDTO dto);
+    TicketMessage toEntity(TicketMessageRequest dto);
 
     @Mapping(target = "authorName", source = "author.name")
-    TicketMessageResponseDTO toResponseDTO(TicketMessage entity);
+    TicketMessageResponse toResponseDTO(TicketMessage entity);
 
 }
