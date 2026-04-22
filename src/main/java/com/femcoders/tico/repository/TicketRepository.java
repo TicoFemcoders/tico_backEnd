@@ -2,6 +2,7 @@ package com.femcoders.tico.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,10 @@ import com.femcoders.tico.enums.TicketStatus;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
+    @EntityGraph(attributePaths = {"labels", "createdBy", "assignedTo"})
+    List<Ticket> findAll();
+
+    @EntityGraph(attributePaths = {"labels", "createdBy", "assignedTo"})
     List<Ticket> findByCreatedById(Long userId);
 
     List<Ticket> findByAssignedToId(Long adminId);
@@ -22,6 +27,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByLabelsId(Long labelId);
 
+    @EntityGraph(attributePaths = {"labels", "createdBy", "assignedTo"})
     List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
 
     @Query("SELECT t.createdBy.id, COUNT(t) FROM Ticket t " +
