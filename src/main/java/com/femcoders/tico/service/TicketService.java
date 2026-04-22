@@ -3,34 +3,34 @@ package com.femcoders.tico.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.TicketResponseDTO;
+import com.femcoders.tico.dto.request.TicketCreateRequest;
+import com.femcoders.tico.dto.response.TicketResponse;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 
 public interface TicketService {
 
-    public TicketResponseDTO createTicket(TicketCreateReqDTO dto);
+    public TicketResponse createTicket(TicketCreateRequest dto);
 
-    public Page<TicketResponseDTO> getAllTickets(Pageable pageable);
+    public Page<TicketResponse> getAllTickets(Pageable pageable);
 
-    public Page<TicketResponseDTO> getTicketsByUser(Pageable pageable);
+    public Page<TicketResponse> getTicketsByUser(Pageable pageable);
 
-    public Page<TicketResponseDTO> getTicketsByAdmin(Pageable pageable);
+    public Page<TicketResponse> getTicketsByAdmin(Pageable pageable);
 
-    public TicketResponseDTO assignAdmin(Long ticketId, Long adminId);
+    public TicketResponse assignAdmin(Long ticketId, Long adminId);
 
-    public TicketResponseDTO assignLabel(Long ticketId, Long labelId);
+    public TicketResponse assignLabel(Long ticketId, Long labelId);
 
-    public TicketResponseDTO removeLabel(Long ticketId, Long labelId);
+    public TicketResponse removeLabel(Long ticketId, Long labelId);
 
-    public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority);
+    public TicketResponse changePriority(Long ticketId, TicketPriority priority);
 
-    public TicketResponseDTO closeTicket(Long ticketId, String closingMessage);
+    public TicketResponse closeTicket(Long ticketId, String closingMessage);
 
-    public TicketResponseDTO getTicketById(Long ticketId);
+    public TicketResponse getTicketById(Long ticketId);
 
-    public TicketResponseDTO changeStatus(Long ticketId, TicketStatus status);
+    public TicketResponse changeStatus(Long ticketId, TicketStatus status);
 
-    public TicketResponseDTO reopenTicket(Long ticketId);
+    public TicketResponse reopenTicket(Long ticketId);
 }

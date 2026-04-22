@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.LabelRequestDTO;
-import com.femcoders.tico.dto.response.LabelResponseDTO;
+import com.femcoders.tico.dto.request.LabelRequest;
+import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.service.LabelService;
 
 import jakarta.validation.Valid;
@@ -33,18 +33,18 @@ public class LabelController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LabelResponseDTO> createLabel(@Valid @RequestBody LabelRequestDTO dto) {
+    public ResponseEntity<LabelResponse> createLabel(@Valid @RequestBody LabelRequest dto) {
         return new ResponseEntity<>(labelService.createLabel(dto), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<Page<LabelResponseDTO>> getAllLabels(
+    public ResponseEntity<Page<LabelResponse>> getAllLabels(
             @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         return ResponseEntity.ok(labelService.getAllLabels(pageable));
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<Page<LabelResponseDTO>> searchLabels(
+    public ResponseEntity<Page<LabelResponse>> searchLabels(
             @RequestParam String name,
             @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         return ResponseEntity.ok(labelService.filterLabelsByName(name, pageable));
@@ -52,9 +52,9 @@ public class LabelController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LabelResponseDTO> updateLabel(
+    public ResponseEntity<LabelResponse> updateLabel(
             @PathVariable Long id,
-            @RequestBody LabelRequestDTO dto) {
+            @RequestBody LabelRequest dto) {
         return ResponseEntity.ok(labelService.updateLabel(id, dto));
     }
 
@@ -67,7 +67,7 @@ public class LabelController {
 
     @PatchMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LabelResponseDTO> activateLabel(@PathVariable Long id) {
+    public ResponseEntity<LabelResponse> activateLabel(@PathVariable Long id) {
         return ResponseEntity.ok(labelService.activateLabel(id));
     }
 }

@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
-import com.femcoders.tico.dto.request.UpdateUserReqDTO;
-import com.femcoders.tico.dto.response.UserResponseDTO;
+import com.femcoders.tico.dto.request.AdminCreateUserRequest;
+import com.femcoders.tico.dto.request.UpdateUserRequest;
+import com.femcoders.tico.dto.response.UserResponse;
 import com.femcoders.tico.service.UserService;
 
 import jakarta.validation.Valid;
@@ -35,35 +35,35 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody AdminCreateUserReqDTO userDto) {
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody AdminCreateUserRequest userDto) {
         return new ResponseEntity<>(userService.createUser(userDto), HttpStatus.CREATED);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
             @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
     @GetMapping("/admins")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<UserResponseDTO>> getAllAdmins(
+    public ResponseEntity<Page<UserResponse>> getAllAdmins(
             @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         return ResponseEntity.ok(userService.getAllAdmins(pageable));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> updateUser(
+    public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateUserReqDTO dto) {
+            @Valid @RequestBody UpdateUserRequest dto) {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
@@ -78,7 +78,7 @@ public class UserController {
 
     @PatchMapping("/{id}/active")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> toggleUserActive(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> toggleUserActive(@PathVariable Long id) {
         return ResponseEntity.ok(userService.toggleUserActive(id));
     }
 }

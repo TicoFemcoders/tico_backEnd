@@ -3,21 +3,21 @@ package com.femcoders.tico.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.femcoders.tico.dto.request.LabelRequestDTO;
-import com.femcoders.tico.dto.response.LabelResponseDTO;
+import com.femcoders.tico.dto.request.LabelRequest;
+import com.femcoders.tico.dto.response.LabelResponse;
 
 public interface LabelService {
 
-    public LabelResponseDTO createLabel(LabelRequestDTO dto);
+    public LabelResponse createLabel(LabelRequest dto);
 
-    public Page<LabelResponseDTO> getAllLabels(Pageable pageable);
+    public Page<LabelResponse> getAllLabels(Pageable pageable);
 
-    public Page<LabelResponseDTO> filterLabelsByName(String name, Pageable pageable);
+    public Page<LabelResponse> filterLabelsByName(String name, Pageable pageable);
 
-    public LabelResponseDTO updateLabel(Long id, LabelRequestDTO labelDTO);
+    public LabelResponse updateLabel(Long id, LabelRequest labelDTO);
 
     public void deactivateLabel(Long id);
 
-    public LabelResponseDTO activateLabel(Long id);
+    public LabelResponse activateLabel(Long id);
 
 }

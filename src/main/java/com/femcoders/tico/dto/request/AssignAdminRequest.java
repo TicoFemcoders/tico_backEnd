@@ -2,6 +2,6 @@ package com.femcoders.tico.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 
-public record AssignAdminRequestDTO(
+public record AssignAdminRequest(
         @NotNull Long adminId
 ) {}

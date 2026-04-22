@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
-import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
+import com.femcoders.tico.dto.request.TicketMessageRequest;
+import com.femcoders.tico.dto.response.TicketMessageResponse;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
@@ -35,7 +35,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private final NotificationService notificationService;
 
     @Override
-    public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId) {
+    public List<TicketMessageResponse> getMessagesByTicketId(Long ticketId) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -51,7 +51,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
     @Override
     @Transactional
-    public TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto) {
+    public TicketMessageResponse createMessage(Long ticketId, TicketMessageRequest dto) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = loadTicketForAuthorizedUser(ticketId, currentUser);
 

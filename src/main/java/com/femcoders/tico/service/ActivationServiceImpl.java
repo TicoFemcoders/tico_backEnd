@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.ActivationReqDTO;
+import com.femcoders.tico.dto.request.ActivationRequest;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -31,7 +31,7 @@ public class ActivationServiceImpl implements ActivationService {
 
   @Override
   @Transactional
-  public void activateAccount(ActivationReqDTO dto) {
+  public void activateAccount(ActivationRequest dto) {
     ActivationToken token = tokenRepository
         .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.ACTIVATION)
         .orElseThrow(() -> new ResourceNotFoundException("Token", "email", dto.email()));

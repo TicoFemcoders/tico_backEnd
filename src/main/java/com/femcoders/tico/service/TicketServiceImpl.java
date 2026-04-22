@@ -6,8 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.TicketResponseDTO;
+import com.femcoders.tico.dto.request.TicketCreateRequest;
+import com.femcoders.tico.dto.response.TicketResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
@@ -40,7 +40,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO createTicket(TicketCreateReqDTO dto) {
+        public TicketResponse createTicket(TicketCreateRequest dto) {
                 User user = authService.getAuthenticatedUser();
 
                 Ticket ticket = ticketMapper.toEntity(dto);
@@ -61,14 +61,14 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional(readOnly = true)
-        public Page<TicketResponseDTO> getAllTickets(Pageable pageable) {
+        public Page<TicketResponse> getAllTickets(Pageable pageable) {
                 return ticketsRepository.findAll(pageable)
                                 .map(ticketMapper::toResponseDTO);
         }
 
         @Override
         @Transactional(readOnly = true)
-        public Page<TicketResponseDTO> getTicketsByUser(Pageable pageable) {
+        public Page<TicketResponse> getTicketsByUser(Pageable pageable) {
                 User user = authService.getAuthenticatedUser();
                 return ticketsRepository.findByCreatedById(user.getId(), pageable)
                                 .map(ticketMapper::toResponseDTO);
@@ -76,7 +76,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional(readOnly = true)
-        public Page<TicketResponseDTO> getTicketsByAdmin(Pageable pageable) {
+        public Page<TicketResponse> getTicketsByAdmin(Pageable pageable) {
                 User admin = authService.getAuthenticatedUser();
                 return ticketsRepository.findByAssignedToIdAndStatusNot(admin.getId(), TicketStatus.CLOSED, pageable)
                                 .map(ticketMapper::toResponseDTO);
@@ -84,7 +84,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO assignAdmin(Long ticketId, Long adminId) {
+        public TicketResponse assignAdmin(Long ticketId, Long adminId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
@@ -111,7 +111,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO assignLabel(Long ticketId, Long labelId) {
+        public TicketResponse assignLabel(Long ticketId, Long labelId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
@@ -124,7 +124,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO removeLabel(Long ticketId, Long labelId) {
+        public TicketResponse removeLabel(Long ticketId, Long labelId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 
@@ -137,7 +137,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional(readOnly = true)
-        public TicketResponseDTO getTicketById(Long ticketId) {
+        public TicketResponse getTicketById(Long ticketId) {
                 User currentUser = authService.getAuthenticatedUser();
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -151,7 +151,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority) {
+        public TicketResponse changePriority(Long ticketId, TicketPriority priority) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 User currentUser = authService.getAuthenticatedUser();
 
@@ -177,7 +177,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO changeStatus(Long ticketId, TicketStatus status) {
+        public TicketResponse changeStatus(Long ticketId, TicketStatus status) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 User currentUser = authService.getAuthenticatedUser();
 
@@ -223,7 +223,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
+        public TicketResponse closeTicket(Long ticketId, String closingMessage) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 if (ticket.getStatus() == TicketStatus.CLOSED) {
                         return ticketMapper.toResponseDTO(ticket);
@@ -254,7 +254,7 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional
-        public TicketResponseDTO reopenTicket(Long ticketId) {
+        public TicketResponse reopenTicket(Long ticketId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
 

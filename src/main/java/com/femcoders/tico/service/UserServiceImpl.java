@@ -18,9 +18,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
-import com.femcoders.tico.dto.request.UpdateUserReqDTO;
-import com.femcoders.tico.dto.response.UserResponseDTO;
+import com.femcoders.tico.dto.request.AdminCreateUserRequest;
+import com.femcoders.tico.dto.request.UpdateUserRequest;
+import com.femcoders.tico.dto.response.UserResponse;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDTO createUser(AdminCreateUserReqDTO userDto) {
+    public UserResponse createUser(AdminCreateUserRequest userDto) {
         User user = userMapper.toEntity(userDto);
         user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
         User savedUser = userRepository.save(user);
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
         Map<Long, Long> openCounts = ticketRepository.countOpenTicketsPerUser()
                 .stream()
                 .collect(Collectors.toMap(
@@ -77,9 +77,9 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findAll(pageable)
                 .map(user -> {
-                    UserResponseDTO base = userMapper.toResponseDTO(user);
+                    UserResponse base = userMapper.toResponseDTO(user);
                     long open = openCounts.getOrDefault(user.getId(), 0L);
-                    return new UserResponseDTO(
+                    return new UserResponse(
                             base.id(), base.name(), base.email(),
                             base.roles(), base.isActive(), open, base.createdAt());
                 });
@@ -121,20 +121,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponseDTO> getAllAdmins(Pageable pageable) {
+    public Page<UserResponse> getAllAdmins(Pageable pageable) {
         return userRepository.findByRolesContaining(UserRole.ADMIN, pageable)
                 .map(userMapper::toResponseDTO);
     }
 
     @Override
-    public UserResponseDTO getUserById(Long id) {
+    public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
         return userMapper.toResponseDTO(user);
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UpdateUserReqDTO dto) {
+    public UserResponse updateUser(Long id, UpdateUserRequest dto) {
         User currentUser = authService.getAuthenticatedUser();
 
         if (currentUser.getId().equals(id) && !dto.roles().contains(UserRole.ADMIN)) {
@@ -155,7 +155,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO toggleUserActive(Long id) {
+    public UserResponse toggleUserActive(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
         user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));

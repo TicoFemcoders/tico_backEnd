@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.response.NotificationResponseDTO;
-import com.femcoders.tico.dto.response.NotificationSummaryDTO;
+import com.femcoders.tico.dto.response.NotificationResponse;
+import com.femcoders.tico.dto.NotificationSummary;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.exception.ResourceNotFoundException;
@@ -33,7 +33,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public List<NotificationResponseDTO> getUnread() {
+  public List<NotificationResponse> getUnread() {
     Long userId = authService.getAuthenticatedUser().getId();
     return ticketMessageRepository.findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId)
         .stream()
@@ -42,7 +42,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public List<NotificationResponseDTO> getAll() {
+  public List<NotificationResponse> getAll() {
     Long userId = authService.getAuthenticatedUser().getId();
     return ticketMessageRepository.findByRecipientIdOrderByCreatedAtDesc(userId)
         .stream()
@@ -51,17 +51,17 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public NotificationSummaryDTO getPaginatedSummary(int page, int size) {
+  public NotificationSummary getPaginatedSummary(int page, int size) {
     Long userId = authService.getAuthenticatedUser().getId();
     long unreadCount = ticketMessageRepository.countByRecipientIdAndIsReadFalse(userId);
     Pageable pageable = PageRequest.of(page, size);
-    List<NotificationResponseDTO> recentNotifications = ticketMessageRepository
+    List<NotificationResponse> recentNotifications = ticketMessageRepository
         .findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId, pageable)
         .getContent()
         .stream()
         .map(this::toDTO)
         .toList();
-    return new NotificationSummaryDTO(unreadCount, recentNotifications);
+    return new NotificationSummary(unreadCount, recentNotifications);
   }
 
   @Override
@@ -79,8 +79,8 @@ public class NotificationServiceImpl implements NotificationService {
     ticketMessageRepository.markAllAsReadByRecipient(userId);
   }
 
-  private NotificationResponseDTO toDTO(TicketMessage n) {
-    return new NotificationResponseDTO(
+  private NotificationResponse toDTO(TicketMessage n) {
+    return new NotificationResponse(
         n.getId(),
         n.getTicketId(),
         n.getContent(),

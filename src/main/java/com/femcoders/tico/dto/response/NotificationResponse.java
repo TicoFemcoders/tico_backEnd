@@ -2,7 +2,7 @@ package com.femcoders.tico.dto.response;
 
 import java.time.LocalDateTime;
 
-public record NotificationResponseDTO(
+public record NotificationResponse(
     Long id,
     Long ticketId,
     String content,
