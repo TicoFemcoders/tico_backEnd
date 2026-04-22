@@ -2,7 +2,9 @@ package com.femcoders.tico.service;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
 import com.femcoders.tico.dto.response.TicketResponseDTO;
@@ -12,16 +14,15 @@ import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.enums.UserRole;
+import com.femcoders.tico.event.TicketCreatedEvent;
+import com.femcoders.tico.event.TicketEmailEvent;
 import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
-import com.femcoders.tico.utils.TicketStatusHelper;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
+import com.femcoders.tico.utils.TicketStatusHelper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +35,7 @@ public class TicketServiceImpl implements TicketService {
         private final LabelRepository labelRepository;
         private final TicketMapper ticketMapper;
         private final AuthService authService;
-        private final EmailService emailService;
+        private final ApplicationEventPublisher eventPublisher;
         private final NotificationService notificationService;
 
         @Override
@@ -47,10 +48,7 @@ public class TicketServiceImpl implements TicketService {
 
                 Ticket saved = ticketsRepository.save(ticket);
 
-                emailService.sendTicketCreatedEmail(
-                                user.getEmail(),
-                                user.getName(),
-                                saved.getEmailSubject());
+                eventPublisher.publishEvent(new TicketCreatedEvent(saved));
 
                 notificationService.create(
                                 saved.getId(),
@@ -166,11 +164,12 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setPriority(priority);
                 Ticket saved = ticketsRepository.save(ticket);
 
-                emailService.sendPriorityChangedEmail(
+                eventPublisher.publishEvent(new TicketEmailEvent(
+                                "PRIORITY_CHANGED",
                                 ticket.getCreatedBy().getEmail(),
                                 ticket.getCreatedBy().getName(),
                                 ticket.getEmailSubject(),
-                                TicketStatusHelper.priorityToSpanish(priority));
+                                TicketStatusHelper.priorityToSpanish(priority)));
 
                 notificationService.create(
                                 ticket.getId(),
@@ -191,10 +190,13 @@ public class TicketServiceImpl implements TicketService {
                 if (status == TicketStatus.CLOSED) {
                         ticket.close();
                         Ticket saved = ticketsRepository.save(ticket);
-                        emailService.sendTicketClosedEmail(
+
+                        eventPublisher.publishEvent(new TicketEmailEvent(
+                                        "CLOSED",
                                         ticket.getCreatedBy().getEmail(),
                                         ticket.getCreatedBy().getName(),
-                                        ticket.getEmailSubject());
+                                        ticket.getEmailSubject(),
+                                        null));
 
                         notificationService.create(
                                         ticket.getId(),
@@ -208,11 +210,12 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setStatus(status);
                 Ticket saved = ticketsRepository.save(ticket);
 
-                emailService.sendStatusChangedEmail(
+                eventPublisher.publishEvent(new TicketEmailEvent(
+                                "STATUS_CHANGED",
                                 ticket.getCreatedBy().getEmail(),
                                 ticket.getCreatedBy().getName(),
                                 ticket.getEmailSubject(),
-                                TicketStatusHelper.statusToSpanish(status));
+                                TicketStatusHelper.statusToSpanish(status)));
 
                 notificationService.create(
                                 ticket.getId(),
@@ -236,10 +239,12 @@ public class TicketServiceImpl implements TicketService {
                 }
                 Ticket saved = ticketsRepository.save(ticket);
 
-                emailService.sendTicketClosedEmail(
+                eventPublisher.publishEvent(new TicketEmailEvent(
+                                "CLOSED",
                                 ticket.getCreatedBy().getEmail(),
                                 ticket.getCreatedBy().getName(),
-                                ticket.getEmailSubject());
+                                ticket.getEmailSubject(),
+                                null));
 
                 notificationService.create(
                                 ticket.getId(),
@@ -276,10 +281,12 @@ public class TicketServiceImpl implements TicketService {
                 Ticket saved = ticketsRepository.save(ticket);
 
                 if (isAssignedAdmin) {
-                        emailService.sendTicketReopenedEmail(
+                        eventPublisher.publishEvent(new TicketEmailEvent(
+                                        "REOPENED",
                                         ticket.getCreatedBy().getEmail(),
                                         ticket.getCreatedBy().getName(),
-                                        ticket.getEmailSubject());
+                                        ticket.getEmailSubject(),
+                                        null));
 
                         notificationService.create(
                                         ticket.getId(),

@@ -1,10 +1,12 @@
 package com.femcoders.tico.service;
 
-import org.springframework.security.access.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +16,7 @@ import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
+import com.femcoders.tico.event.TicketEmailEvent;
 import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMessageMapper;
@@ -27,7 +30,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private final TicketMessageRepository ticketMessageRepository;
     private final TicketMessageMapper ticketMessageMapper;
     private final TicketRepository ticketRepository;
-    private final EmailService emailService;
+    private final ApplicationEventPublisher eventPublisher;
     private final AuthService authService;
     private final NotificationService notificationService;
 
@@ -47,6 +50,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     }
 
     @Override
+    @Transactional
     public TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = loadTicketForAuthorizedUser(ticketId, currentUser);
@@ -60,11 +64,12 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 && ticket.getAssignedTo().getId().equals(currentUser.getId());
 
         if (authorIsAssignedAdmin) {
-            emailService.sendNewMessageEmail(
+            eventPublisher.publishEvent(new TicketEmailEvent(
+                    "NEW_MESSAGE",
                     ticket.getCreatedBy().getEmail(),
                     ticket.getCreatedBy().getName(),
                     ticket.getEmailSubject(),
-                    saved.getContent());
+                    saved.getContent()));
 
             notificationService.create(
                     ticket.getId(),
