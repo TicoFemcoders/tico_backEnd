@@ -15,27 +15,21 @@ import com.femcoders.tico.service.AuthService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/reset-password")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
   private final AuthService authService;
 
-  @PostMapping("/request")
+  @PostMapping("/password/request")
   public ResponseEntity<Void> requestReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
     authService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/confirm")
+  @PostMapping("/password/confirm")
   public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirmDTO dto) {
     authService.confirmReset(dto);
-    return ResponseEntity.ok().build();
-  }
-
-  @PostMapping("/resend")
-  public ResponseEntity<Void> resendReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
-    authService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 }

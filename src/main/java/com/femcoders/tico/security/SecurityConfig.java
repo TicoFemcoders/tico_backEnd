@@ -49,7 +49,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/login").permitAll()
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/api/activation/**").permitAll()
-                                                .requestMatchers("/api/reset-password/**").permitAll()
+                                                .requestMatchers("/api/auth/password/**").permitAll()
                                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
