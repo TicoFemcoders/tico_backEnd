@@ -61,6 +61,7 @@ public class ActivationServiceImpl implements ActivationService {
       throw new IllegalStateException("La cuenta ya está activada");
     }
 
+    tokenRepository.invalidatePendingTokens(user.getId(), TokenType.ACTIVATION);
     String code = generateCodeAndSaveToken(user, TokenType.ACTIVATION);
     emailService.sendActivationEmail(user.getEmail(), user.getName(), code);
   }

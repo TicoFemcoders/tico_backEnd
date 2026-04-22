@@ -69,6 +69,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Activa tu cuenta antes de resetear la contraseña");
         }
 
+        tokenRepository.invalidatePendingTokens(user.getId(), TokenType.RESET);
+
         String code = generateCode();
         ActivationToken token = new ActivationToken();
         token.setUser(user);
