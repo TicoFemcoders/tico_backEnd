@@ -1,7 +1,5 @@
 package com.femcoders.tico.service;
 
-import java.util.List;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -227,6 +225,9 @@ public class TicketServiceImpl implements TicketService {
         @Transactional
         public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
+                if (ticket.getStatus() == TicketStatus.CLOSED) {
+                        return ticketMapper.toResponseDTO(ticket);
+                }
                 User currentUser = authService.getAuthenticatedUser();
 
                 ticket.close();

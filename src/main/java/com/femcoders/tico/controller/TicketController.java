@@ -10,18 +10,19 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.femcoders.tico.dto.request.AssignAdminRequestDTO;
+import com.femcoders.tico.dto.request.ChangePriorityRequestDTO;
+import com.femcoders.tico.dto.request.ChangeStatusRequestDTO;
+import com.femcoders.tico.dto.request.CloseTicketRequestDTO;
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
 import com.femcoders.tico.dto.response.TicketResponseDTO;
-import com.femcoders.tico.enums.TicketPriority;
-import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.service.TicketService;
 
 import jakarta.validation.Valid;
@@ -59,39 +60,39 @@ public class TicketController {
         return ResponseEntity.ok(ticketsService.getTicketsByAdmin(pageable));
     }
 
-    @PutMapping("/{id}/assign-admin")
+    @PatchMapping("/{id}/assign-admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> assignAdmin(
             @PathVariable Long id,
-            @RequestParam Long adminId) {
-        return new ResponseEntity<>(ticketsService.assignAdmin(id, adminId), HttpStatus.OK);
+            @Valid @RequestBody AssignAdminRequestDTO dto) {
+        return new ResponseEntity<>(ticketsService.assignAdmin(id, dto.adminId()), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/priority")
+    @PatchMapping("/{id}/priority")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> changePriority(
             @PathVariable Long id,
-            @RequestParam TicketPriority priority) {
-        return new ResponseEntity<>(ticketsService.changePriority(id, priority), HttpStatus.OK);
+            @Valid @RequestBody ChangePriorityRequestDTO dto) {
+        return new ResponseEntity<>(ticketsService.changePriority(id, dto.priority()), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> changeStatus(
             @PathVariable Long id,
-            @RequestParam TicketStatus status) {
-        return new ResponseEntity<>(ticketsService.changeStatus(id, status), HttpStatus.OK);
+            @Valid @RequestBody ChangeStatusRequestDTO dto) {
+        return new ResponseEntity<>(ticketsService.changeStatus(id, dto.status()), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/close")
+    @PatchMapping("/{id}/close")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TicketResponseDTO> closeTicket(
             @PathVariable Long id,
-            @RequestParam(required = false) String closingMessage) {
-        return new ResponseEntity<>(ticketsService.closeTicket(id, closingMessage), HttpStatus.OK);
+            @Valid @RequestBody CloseTicketRequestDTO dto) {
+        return new ResponseEntity<>(ticketsService.closeTicket(id, dto.closingMessage()), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/reopen")
+    @PatchMapping("/{id}/reopen")
     public ResponseEntity<TicketResponseDTO> reopenTicket(@PathVariable Long id) {
         return new ResponseEntity<>(ticketsService.reopenTicket(id), HttpStatus.OK);
     }
