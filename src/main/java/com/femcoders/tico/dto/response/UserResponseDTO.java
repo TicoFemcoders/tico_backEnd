@@ -1,13 +1,16 @@
 package com.femcoders.tico.dto.response;
 
-import com.femcoders.tico.enums.UserRole;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public record UserResponseDTO(
-    Long id,
-    String name,
-    String email,
-    UserRole role,
-    Boolean isActive,
-    LocalDateTime createdAt
-) {}
+        Long id,
+        String name,
+        String email,
+        Set<String> roles,
+        Boolean isActive,
+        long openTickets,
+        LocalDateTime createdAt
+        ) {
+
+}
