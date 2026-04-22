@@ -6,8 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.enums.TicketStatus;
@@ -43,5 +46,12 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @Query("SELECT l.id, t.status, COUNT(t) FROM Ticket t JOIN t.labels l GROUP BY l.id, t.status")
     List<Object[]> countTicketsGroupedByLabelAndStatus();
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Ticket t SET t.assignedTo = null " +
+            "WHERE t.assignedTo.id = :adminId " +
+            "AND t.status <> com.femcoders.tico.enums.TicketStatus.CLOSED")
+    int unassignOpenTicketsByAdmin(@Param("adminId") Long adminId);
 
 }

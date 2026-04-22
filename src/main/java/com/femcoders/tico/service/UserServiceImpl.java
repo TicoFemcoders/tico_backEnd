@@ -109,6 +109,7 @@ public class UserServiceImpl implements UserService {
             ticketRepository.saveAll(activeTickets);
         }
 
+        ticketRepository.unassignOpenTicketsByAdmin(userId);
         userRepository.delete(user);
     }
 
