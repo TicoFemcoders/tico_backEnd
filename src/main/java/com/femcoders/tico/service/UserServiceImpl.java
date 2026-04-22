@@ -88,8 +88,19 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long userId, String reassignEmail) {
+        User currentUser = authService.getAuthenticatedUser();
+
+        if (currentUser.getId().equals(userId)) {
+            throw new BadRequestException("No puedes eliminarte a ti mismo");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
+        if (user.getRoles().contains(UserRole.ADMIN)
+                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
+            throw new ConflictException("No puedes eliminar al único administrador del sistema");
+        }
 
         List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId)
                 .stream()
@@ -156,9 +167,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse toggleUserActive(Long id) {
+        User currentUser = authService.getAuthenticatedUser();
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
-        user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
+
+        boolean isCurrentlyActive = Boolean.TRUE.equals(user.getIsActive());
+
+        if (currentUser.getId().equals(id) && isCurrentlyActive) {
+            throw new BadRequestException("No puedes desactivar tu propia cuenta");
+        }
+
+        if (user.getRoles().contains(UserRole.ADMIN)
+                && isCurrentlyActive
+                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
+            throw new ConflictException("No puedes desactivar al único administrador activo del sistema");
+        }
+
+        user.setIsActive(!isCurrentlyActive);
         return userMapper.toResponseDTO(userRepository.save(user));
     }
 }
