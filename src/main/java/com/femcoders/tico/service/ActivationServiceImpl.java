@@ -36,16 +36,10 @@ public class ActivationServiceImpl implements ActivationService {
         .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.ACTIVATION)
         .orElseThrow(() -> new ResourceNotFoundException("Token", "email", dto.email()));
 
-    if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-      throw new BadRequestException("Código expirado");
-    }
-
-    if (!token.getCode().equals(dto.code())) {
-      throw new BadRequestException("Código incorrecto");
-    }
-
-    if (!dto.password().equals(dto.confirmPassword())) {
-      throw new BadRequestException("Las contraseñas no coinciden");
+    if (token.getExpiresAt().isBefore(LocalDateTime.now())
+        || !token.getCode().equals(dto.code())
+        || !dto.password().equals(dto.confirmPassword())) {
+      throw new BadRequestException("Los datos de activación no son válidos");
     }
 
     token.setUsed(true);
