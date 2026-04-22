@@ -12,6 +12,8 @@ import com.femcoders.tico.dto.request.LabelRequestDTO;
 import com.femcoders.tico.dto.response.LabelResponseDTO;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
+import com.femcoders.tico.exception.BadRequestException;
+import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -27,7 +29,7 @@ public class LabelServiceImpl implements LabelService {
   public LabelResponseDTO createLabel(LabelRequestDTO dto) {
 
     if (labelRepository.existsByName(dto.name())) {
-      throw new IllegalStateException("La etiqueta '" + dto.name() + "' ya existe");
+      throw new ConflictException("La etiqueta '" + dto.name() + "' ya existe");
     }
     Label labelEntity = labelMapper.toEntity(dto);
 
@@ -68,7 +70,7 @@ public class LabelServiceImpl implements LabelService {
         .anyMatch(t -> t.getStatus() != TicketStatus.CLOSED);
 
     if (hasActiveTickets) {
-      throw new IllegalStateException("La etiqueta está en uso por tickets activos. No se puede desactivar.");
+      throw new BadRequestException("La etiqueta está en uso por tickets activos. No se puede desactivar.");
     }
 
     label.setIsActive(false);
