@@ -23,7 +23,7 @@ public class JwtTokenService {
     return JWT.create()
         .withSubject(email)
         .withClaim("userId", userId)
-        .withClaim("roles", String.join(",", roles))
+        .withArrayClaim("roles", roles.toArray(new String[0]))
         .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpiration))
         .sign(Algorithm.HMAC256(jwtSecret));
   }
