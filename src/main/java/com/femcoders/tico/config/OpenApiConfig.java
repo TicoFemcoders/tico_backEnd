@@ -4,9 +4,11 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -14,10 +16,13 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
+import java.util.Map;
 
 @Configuration
+@Profile("dev")
 public class OpenApiConfig {
 
   @Bean
@@ -37,16 +42,8 @@ public class OpenApiConfig {
   private PathItem buildLoginPath() {
     Schema<?> loginBody = new Schema<>()
         .type("object")
-        .addProperty("email", new Schema<>().type("string").example("empleado@cohispania.com"))
-        .addProperty("password", new Schema<>().type("string").example("tu-password"));
-
-    Schema<?> authResponseBody = new Schema<>()
-        .type("object")
-        .addProperty("id", new Schema<>().type("integer"))
-        .addProperty("name", new Schema<>().type("string"))
-        .addProperty("email", new Schema<>().type("string"))
-        .addProperty("roles", new Schema<>().type("array")
-            .items(new Schema<>().type("string").example("ROLE_EMPLOYEE")));
+        .addProperty("email", new Schema<>().type("string").example("usuario@empresa.com"))
+        .addProperty("password", new Schema<>().type("string").example("tu_contraseña"));
 
     Operation post = new Operation()
         .tags(List.of("auth"))
@@ -59,9 +56,10 @@ public class OpenApiConfig {
                 new MediaType().schema(loginBody))))
         .responses(new ApiResponses()
             .addApiResponse("200", new ApiResponse()
-                .description("Login correcto — JWT en header Authorization")
-                .content(new Content().addMediaType("application/json",
-                    new MediaType().schema(authResponseBody))))
+                .description("Login exitoso — JWT en header Authorization")
+                .headers(Map.of("Authorization", new Header()
+                    .description("Bearer <token>")
+                    .schema(new StringSchema()))))
             .addApiResponse("401", new ApiResponse()
                 .description("Credenciales incorrectas")));
 
@@ -70,4 +68,3 @@ public class OpenApiConfig {
     return new PathItem().post(post);
   }
 }
-
