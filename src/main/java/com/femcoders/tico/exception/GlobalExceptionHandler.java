@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
-        log.warn("Recurso no encontrado: {}", ex.getMessage());
+        log.warn("Recurso no encontrado: {} con campo {}", ex.getResourceName(), ex.getFieldName());
         return responseBuilder.build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 

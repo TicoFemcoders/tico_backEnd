@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         try {
             emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getName(), code);
         } catch (Exception e) {
-            log.warn("No se pudo enviar el email de activación a {}: {}", savedUser.getEmail(), e.getMessage());
+            log.warn("No se pudo enviar el email de activación a {}: {}", maskEmail(savedUser.getEmail()), e.getMessage());
         }
 
         return userMapper.toResponseDTO(savedUser);
@@ -122,6 +122,12 @@ public class UserServiceImpl implements UserService {
 
         ticketRepository.unassignOpenTicketsByAdmin(userId);
         userRepository.delete(user);
+    }
+
+    private static String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return "***";
+        int at = email.indexOf('@');
+        return email.charAt(0) + "***" + email.substring(at);
     }
 
     @Override
