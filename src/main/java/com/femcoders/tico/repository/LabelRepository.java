@@ -18,6 +18,8 @@ public interface LabelRepository extends JpaRepository<Label, Long> {
 
     boolean existsByName(String name);
 
+    boolean existsByNameIgnoreCase(String name);
+
     boolean existsByTicketsId(Long id);
 
 }

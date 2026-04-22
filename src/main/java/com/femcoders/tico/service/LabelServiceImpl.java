@@ -1,7 +1,6 @@
 package com.femcoders.tico.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,7 @@ public class LabelServiceImpl implements LabelService {
   @Override
   public LabelResponse createLabel(LabelRequest dto) {
 
-    if (labelRepository.existsByName(dto.name())) {
+    if (labelRepository.existsByNameIgnoreCase(dto.name())) {
       throw new IllegalStateException("La etiqueta '" + dto.name() + "' ya existe");
     }
     Label labelEntity = labelMapper.toEntity(dto);
