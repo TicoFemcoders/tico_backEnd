@@ -17,6 +17,9 @@ import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
 import com.femcoders.tico.utils.TicketStatusHelper;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 
@@ -35,6 +38,7 @@ public class TicketServiceImpl implements TicketService {
         private final NotificationService notificationService;
 
         @Override
+        @Transactional
         public TicketResponseDTO createTicket(TicketCreateReqDTO dto) {
                 User user = authService.getAuthenticatedUser();
 
@@ -58,6 +62,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional(readOnly = true)
         public List<TicketResponseDTO> getAllTickets() {
                 return ticketsRepository.findAll()
                                 .stream()
@@ -66,6 +71,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional(readOnly = true)
         public List<TicketResponseDTO> getTicketsByUser() {
                 User user = authService.getAuthenticatedUser();
 
@@ -76,6 +82,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional(readOnly = true)
         public List<TicketResponseDTO> getTicketsByAdmin() {
                 User admin = authService.getAuthenticatedUser();
                 return ticketsRepository.findByAssignedToIdAndStatusNot(admin.getId(), TicketStatus.CLOSED)
@@ -85,6 +92,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO assignAdmin(Long ticketId, Long adminId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -110,6 +118,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO assignLabel(Long ticketId, Long labelId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -122,6 +131,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO removeLabel(Long ticketId, Long labelId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -134,6 +144,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional(readOnly = true)
         public TicketResponseDTO getTicketById(Long ticketId) {
                 User currentUser = authService.getAuthenticatedUser();
                 Ticket ticket = ticketsRepository.findById(ticketId)
@@ -147,6 +158,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO changePriority(Long ticketId, TicketPriority priority) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 User currentUser = authService.getAuthenticatedUser();
@@ -171,6 +183,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO changeStatus(Long ticketId, TicketStatus status) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 User currentUser = authService.getAuthenticatedUser();
@@ -205,12 +218,14 @@ public class TicketServiceImpl implements TicketService {
                                 ticket.getId(),
                                 currentUser.getId(),
                                 ticket.getCreatedBy().getId(),
-                                "Estado actualizado a " + TicketStatusHelper.statusToSpanish(status) + ": " + ticket.getEmailSubject());
+                                "Estado actualizado a " + TicketStatusHelper.statusToSpanish(status) + ": "
+                                                + ticket.getEmailSubject());
 
                 return ticketMapper.toResponseDTO(saved);
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO closeTicket(Long ticketId, String closingMessage) {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 User currentUser = authService.getAuthenticatedUser();
@@ -236,6 +251,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Override
+        @Transactional
         public TicketResponseDTO reopenTicket(Long ticketId) {
                 Ticket ticket = ticketsRepository.findById(ticketId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
