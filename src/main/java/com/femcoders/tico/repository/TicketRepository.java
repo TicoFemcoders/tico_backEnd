@@ -2,6 +2,8 @@ package com.femcoders.tico.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +21,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @EntityGraph(attributePaths = {"labels", "createdBy", "assignedTo"})
     List<Ticket> findByCreatedById(Long userId);
 
+    Page<Ticket> findByCreatedById(Long userId, Pageable pageable);
+
     List<Ticket> findByAssignedToId(Long adminId);
 
     List<Ticket> findByAssignedToIdAndStatus(Long adminId, TicketStatus status);
@@ -29,6 +33,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @EntityGraph(attributePaths = {"labels", "createdBy", "assignedTo"})
     List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
+
+    Page<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status, Pageable pageable);
 
     @Query("SELECT t.createdBy.id, COUNT(t) FROM Ticket t " +
             "WHERE t.status <> com.femcoders.tico.enums.TicketStatus.CLOSED " +

@@ -3,6 +3,8 @@ package com.femcoders.tico.service;
 import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,32 +63,25 @@ public class TicketServiceImpl implements TicketService {
 
         @Override
         @Transactional(readOnly = true)
-        public List<TicketResponseDTO> getAllTickets() {
-                return ticketsRepository.findAll()
-                                .stream()
-                                .map(ticketMapper::toResponseDTO)
-                                .toList();
+        public Page<TicketResponseDTO> getAllTickets(Pageable pageable) {
+                return ticketsRepository.findAll(pageable)
+                                .map(ticketMapper::toResponseDTO);
         }
 
         @Override
         @Transactional(readOnly = true)
-        public List<TicketResponseDTO> getTicketsByUser() {
+        public Page<TicketResponseDTO> getTicketsByUser(Pageable pageable) {
                 User user = authService.getAuthenticatedUser();
-
-                return ticketsRepository.findByCreatedById(user.getId())
-                                .stream()
-                                .map(ticketMapper::toResponseDTO)
-                                .toList();
+                return ticketsRepository.findByCreatedById(user.getId(), pageable)
+                                .map(ticketMapper::toResponseDTO);
         }
 
         @Override
         @Transactional(readOnly = true)
-        public List<TicketResponseDTO> getTicketsByAdmin() {
+        public Page<TicketResponseDTO> getTicketsByAdmin(Pageable pageable) {
                 User admin = authService.getAuthenticatedUser();
-                return ticketsRepository.findByAssignedToIdAndStatusNot(admin.getId(), TicketStatus.CLOSED)
-                                .stream()
-                                .map(ticketMapper::toResponseDTO)
-                                .toList();
+                return ticketsRepository.findByAssignedToIdAndStatusNot(admin.getId(), TicketStatus.CLOSED, pageable)
+                                .map(ticketMapper::toResponseDTO);
         }
 
         @Override

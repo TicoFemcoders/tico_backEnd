@@ -1,7 +1,7 @@
 package com.femcoders.tico.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
@@ -12,9 +12,9 @@ public interface UserService extends UserDetailsService {
 
     public UserResponseDTO createUser(AdminCreateUserReqDTO userDto);
 
-    public List<UserResponseDTO> getAllUsers();
+    public Page<UserResponseDTO> getAllUsers(Pageable pageable);
 
-    public List<UserResponseDTO> getAllAdmins();
+    public Page<UserResponseDTO> getAllAdmins(Pageable pageable);
 
     public UserResponseDTO getUserById(Long id);
 

@@ -1,6 +1,7 @@
 package com.femcoders.tico.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.femcoders.tico.dto.request.TicketCreateReqDTO;
 import com.femcoders.tico.dto.response.TicketResponseDTO;
@@ -11,11 +12,11 @@ public interface TicketService {
 
     public TicketResponseDTO createTicket(TicketCreateReqDTO dto);
 
-    public List<TicketResponseDTO> getAllTickets();
+    public Page<TicketResponseDTO> getAllTickets(Pageable pageable);
 
-    public List<TicketResponseDTO> getTicketsByUser();
+    public Page<TicketResponseDTO> getTicketsByUser(Pageable pageable);
 
-    public List<TicketResponseDTO> getTicketsByAdmin();
+    public Page<TicketResponseDTO> getTicketsByAdmin(Pageable pageable);
 
     public TicketResponseDTO assignAdmin(Long ticketId, Long adminId);
 

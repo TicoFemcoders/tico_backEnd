@@ -3,6 +3,8 @@ package com.femcoders.tico.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,10 +43,10 @@ public class LabelServiceImpl implements LabelService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<LabelResponseDTO> getAllLabels() {
+  public Page<LabelResponseDTO> getAllLabels(Pageable pageable) {
     LabelTicketCounts counts = LabelTicketCounts.from(
         ticketRepository.countTicketsGroupedByLabelAndStatus());
-    return labelRepository.findAll().stream()
+    return labelRepository.findAll(pageable)
         .map(label -> new LabelResponseDTO(
             label.getId(),
             label.getName(),
@@ -52,15 +54,13 @@ public class LabelServiceImpl implements LabelService {
             label.getCreatedAt(),
             label.getIsActive(),
             counts.activeFor(label.getId()),
-            counts.closedFor(label.getId())))
-        .toList();
+            counts.closedFor(label.getId())));
   }
 
   @Override
-  public List<LabelResponseDTO> filterLabelsByName(String name) {
-    return labelRepository.findByNameContainingIgnoreCase(name).stream()
-        .map(labelMapper::toResponseDto)
-        .toList();
+  public Page<LabelResponseDTO> filterLabelsByName(String name, Pageable pageable) {
+    return labelRepository.findByNameContainingIgnoreCase(name, pageable)
+        .map(labelMapper::toResponseDto);
   }
 
   @Override

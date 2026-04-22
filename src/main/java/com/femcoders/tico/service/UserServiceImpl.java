@@ -1,10 +1,12 @@
 package com.femcoders.tico.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.femcoders.tico.exception.BadRequestException;
 import org.slf4j.Logger;
@@ -66,23 +68,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> getAllUsers() {
+    public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
         Map<Long, Long> openCounts = ticketRepository.countOpenTicketsPerUser()
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
                         row -> (Long) row[1]));
 
-        return userRepository.findAll()
-                .stream()
+        return userRepository.findAll(pageable)
                 .map(user -> {
                     UserResponseDTO base = userMapper.toResponseDTO(user);
                     long open = openCounts.getOrDefault(user.getId(), 0L);
                     return new UserResponseDTO(
                             base.id(), base.name(), base.email(),
                             base.roles(), base.isActive(), open, base.createdAt());
-                })
-                .toList();
+                });
     }
 
     @Override
@@ -120,9 +120,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getAllAdmins() {
-        return userRepository.findByRolesContaining(UserRole.ADMIN)
-                .stream().map(userMapper::toResponseDTO).toList();
+    public Page<UserResponseDTO> getAllAdmins(Pageable pageable) {
+        return userRepository.findByRolesContaining(UserRole.ADMIN, pageable)
+                .map(userMapper::toResponseDTO);
     }
 
     @Override

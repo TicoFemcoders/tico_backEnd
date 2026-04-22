@@ -1,7 +1,8 @@
 package com.femcoders.tico.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -40,14 +41,16 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
+            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
     @GetMapping("/admins")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponseDTO>> getAllAdmins() {
-        return ResponseEntity.ok(userService.getAllAdmins());
+    public ResponseEntity<Page<UserResponseDTO>> getAllAdmins(
+            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllAdmins(pageable));
     }
 
     @GetMapping("/{id}")

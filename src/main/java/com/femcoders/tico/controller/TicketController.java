@@ -1,7 +1,8 @@
 package com.femcoders.tico.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,18 +42,21 @@ public class TicketController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TicketResponseDTO>> getAllTickets() {
-        return new ResponseEntity<>(ticketsService.getAllTickets(), HttpStatus.OK);
+    public ResponseEntity<Page<TicketResponseDTO>> getAllTickets(
+            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+        return ResponseEntity.ok(ticketsService.getAllTickets(pageable));
     }
 
     @GetMapping("/my-tickets")
-    public ResponseEntity<List<TicketResponseDTO>> getMyTickets() {
-        return new ResponseEntity<>(ticketsService.getTicketsByUser(), HttpStatus.OK);
+    public ResponseEntity<Page<TicketResponseDTO>> getMyTickets(
+            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+        return ResponseEntity.ok(ticketsService.getTicketsByUser(pageable));
     }
 
     @GetMapping("/assigned")
-    public ResponseEntity<List<TicketResponseDTO>> getAssignedTickets() {
-        return new ResponseEntity<>(ticketsService.getTicketsByAdmin(), HttpStatus.OK);
+    public ResponseEntity<Page<TicketResponseDTO>> getAssignedTickets(
+            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+        return ResponseEntity.ok(ticketsService.getTicketsByAdmin(pageable));
     }
 
     @PutMapping("/{id}/assign-admin")
