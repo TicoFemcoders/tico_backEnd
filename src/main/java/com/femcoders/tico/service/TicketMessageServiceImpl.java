@@ -73,7 +73,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
             notificationService.create(
                     ticket.getId(),
-                    currentUser.getId(),
+                    currentUser,
                     ticket.getCreatedBy().getId(),
                     "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
         }
@@ -82,7 +82,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         if (authorIsCreator && ticket.getAssignedTo() != null) {
             notificationService.create(
                     ticket.getId(),
-                    currentUser.getId(),
+                    currentUser,
                     ticket.getAssignedTo().getId(),
                     "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
         }

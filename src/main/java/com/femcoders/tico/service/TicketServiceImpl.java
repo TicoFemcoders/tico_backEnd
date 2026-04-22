@@ -54,7 +54,7 @@ public class TicketServiceImpl implements TicketService {
 
                 notificationService.create(
                                 saved.getId(),
-                                user.getId(),
+                                user,
                                 user.getId(),
                                 "Tu ticket ha sido creado: " + saved.getEmailSubject());
 
@@ -93,6 +93,7 @@ public class TicketServiceImpl implements TicketService {
                 User admin = userRepository.findById(adminId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", adminId));
 
+                User currentUser = authService.getAuthenticatedUser();
                 boolean isReassignment = ticket.getAssignedTo() != null;
                 String content = isReassignment
                                 ? "Te han reasignado el ticket: " + ticket.getEmailSubject()
@@ -103,7 +104,7 @@ public class TicketServiceImpl implements TicketService {
 
                 notificationService.create(
                                 ticket.getId(),
-                                authService.getAuthenticatedUser().getId(),
+                                currentUser,
                                 admin.getId(),
                                 content);
 
@@ -168,7 +169,7 @@ public class TicketServiceImpl implements TicketService {
 
                 notificationService.create(
                                 ticket.getId(),
-                                currentUser.getId(),
+                                currentUser,
                                 ticket.getCreatedBy().getId(),
                                 "Prioridad actualizada a " + TicketStatusHelper.priorityToSpanish(priority) + ": "
                                                 + ticket.getEmailSubject());
@@ -195,7 +196,7 @@ public class TicketServiceImpl implements TicketService {
 
                         notificationService.create(
                                         ticket.getId(),
-                                        currentUser.getId(),
+                                        currentUser,
                                         ticket.getCreatedBy().getId(),
                                         "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
 
@@ -214,7 +215,7 @@ public class TicketServiceImpl implements TicketService {
 
                 notificationService.create(
                                 ticket.getId(),
-                                currentUser.getId(),
+                                currentUser,
                                 ticket.getCreatedBy().getId(),
                                 "Estado actualizado a " + TicketStatusHelper.statusToSpanish(status) + ": "
                                                 + ticket.getEmailSubject());
@@ -243,7 +244,7 @@ public class TicketServiceImpl implements TicketService {
 
                 notificationService.create(
                                 ticket.getId(),
-                                currentUser.getId(),
+                                currentUser,
                                 ticket.getCreatedBy().getId(),
                                 "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
 
@@ -285,7 +286,7 @@ public class TicketServiceImpl implements TicketService {
 
                         notificationService.create(
                                         ticket.getId(),
-                                        currentUser.getId(),
+                                        currentUser,
                                         ticket.getCreatedBy().getId(),
                                         "Tu ticket ha sido reactivado: " + ticket.getEmailSubject());
                 }
@@ -293,7 +294,7 @@ public class TicketServiceImpl implements TicketService {
                 if (isCreator && ticket.getAssignedTo() != null) {
                         notificationService.create(
                                         ticket.getId(),
-                                        currentUser.getId(),
+                                        currentUser,
                                         ticket.getAssignedTo().getId(),
                                         "El empleado ha reactivado el ticket: " + ticket.getEmailSubject());
                 }

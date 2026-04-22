@@ -4,10 +4,11 @@ import java.util.List;
 
 import com.femcoders.tico.dto.response.NotificationResponseDTO;
 import com.femcoders.tico.dto.response.NotificationSummaryDTO;
+import com.femcoders.tico.entity.User;
 
 public interface NotificationService {
 
-  public void create(Long ticketId, Long authorId, Long recipientId, String content);
+  public void create(Long ticketId, User author, Long recipientId, String content);
 
   public List<NotificationResponseDTO> getUnread();
 

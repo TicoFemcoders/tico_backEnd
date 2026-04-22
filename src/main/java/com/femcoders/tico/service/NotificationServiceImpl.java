@@ -14,20 +14,16 @@ import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.TicketMessageRepository;
-import com.femcoders.tico.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
   private final TicketMessageRepository ticketMessageRepository;
-  private final UserRepository userRepository;
   private final AuthService authService;
 
   @Override
-  public void create(Long ticketId, Long authorId, Long recipientId, String content) {
-    User author = userRepository.findById(authorId)
-        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", authorId));
+  public void create(Long ticketId, User author, Long recipientId, String content) {
     TicketMessage notification = new TicketMessage();
     notification.setTicketId(ticketId);
     notification.setAuthor(author);
