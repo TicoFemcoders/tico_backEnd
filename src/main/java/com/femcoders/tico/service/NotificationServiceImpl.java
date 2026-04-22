@@ -70,18 +70,17 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   public void markAsRead(Long notificationId) {
-    TicketMessage notification = ticketMessageRepository.findById(notificationId)
-        .orElseThrow(() -> new ResourceNotFoundException("Notificación", "id", notificationId));
-    notification.setIsRead(true);
-    ticketMessageRepository.save(notification);
+    Long userId = authService.getAuthenticatedUser().getId();
+    int updated = ticketMessageRepository.markAsReadByIdAndRecipient(notificationId, userId);
+    if (updated == 0) {
+      throw new ResourceNotFoundException("Notificación", "id", notificationId);
+    }
   }
 
   @Override
   public void markAllAsRead() {
     Long userId = authService.getAuthenticatedUser().getId();
-    List<TicketMessage> unread = ticketMessageRepository.findByRecipientIdAndIsReadFalse(userId);
-    unread.forEach(n -> n.setIsRead(true));
-    ticketMessageRepository.saveAll(unread);
+    ticketMessageRepository.markAllAsReadByRecipient(userId);
   }
 
   private NotificationResponseDTO toDTO(TicketMessage n) {
