@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import com.femcoders.tico.dto.LabelTicketCounts;
 import com.femcoders.tico.dto.request.LabelRequestDTO;
 import com.femcoders.tico.dto.response.LabelResponseDTO;
 import com.femcoders.tico.entity.Label;
@@ -15,6 +16,7 @@ import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
+import com.femcoders.tico.repository.TicketRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class LabelServiceImpl implements LabelService {
 
   private final LabelRepository labelRepository;
   private final LabelMapper labelMapper;
+  private final TicketRepository ticketRepository;
 
   @Override
   public LabelResponseDTO createLabel(LabelRequestDTO dto) {
@@ -37,9 +40,19 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<LabelResponseDTO> getAllLabels() {
+    LabelTicketCounts counts = LabelTicketCounts.from(
+        ticketRepository.countTicketsGroupedByLabelAndStatus());
     return labelRepository.findAll().stream()
-        .map(labelMapper::toResponseDto)
+        .map(label -> new LabelResponseDTO(
+            label.getId(),
+            label.getName(),
+            label.getColor(),
+            label.getCreatedAt(),
+            label.getIsActive(),
+            counts.activeFor(label.getId()),
+            counts.closedFor(label.getId())))
         .toList();
   }
 

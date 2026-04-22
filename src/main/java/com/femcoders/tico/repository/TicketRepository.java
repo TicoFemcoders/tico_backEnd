@@ -29,4 +29,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "GROUP BY t.createdBy.id")
     List<Object[]> countOpenTicketsPerUser();
 
+    @Query("SELECT l.id, t.status, COUNT(t) FROM Ticket t JOIN t.labels l GROUP BY l.id, t.status")
+    List<Object[]> countTicketsGroupedByLabelAndStatus();
+
 }
