@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 @Service
 public class JwtTokenService {
@@ -27,7 +28,9 @@ public class JwtTokenService {
         .sign(Algorithm.HMAC256(jwtSecret));
   }
 
-  public String getSecret() {
-    return jwtSecret;
+  public DecodedJWT verify(String token) {
+    return JWT.require(Algorithm.HMAC256(jwtSecret))
+        .build()
+        .verify(token);
   }
 }

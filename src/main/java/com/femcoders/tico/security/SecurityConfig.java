@@ -24,9 +24,6 @@ public class SecurityConfig {
         private final CorsConfigurationSource corsConfigurationSource;
         private final JwtTokenService jwtTokenService;
 
-        @Value("${JWT_SECRET}")
-        private String jwtSecret;
-
         public SecurityConfig(CustomAuthenticationManager customAuthenticationManager,
                         CorsConfigurationSource corsConfigurationSource,
                         JwtTokenService jwtTokenService) {
@@ -56,7 +53,7 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
                                 .addFilter(authenticationFilter)
                                 .addFilterAfter(
-                                                new JWTAuthorizationFilter(customAuthenticationManager, jwtSecret),
+                                                new JWTAuthorizationFilter(customAuthenticationManager, jwtTokenService),
                                                 JWTAuthenticationFilter.class)
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

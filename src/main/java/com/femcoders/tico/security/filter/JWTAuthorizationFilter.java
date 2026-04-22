@@ -1,11 +1,9 @@
 package com.femcoders.tico.security.filter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,10 +12,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.femcoders.tico.security.JwtTokenService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,12 +23,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-  @Value("${JWT_SECRET}")
-  private final String jwtSecret;
+  private final JwtTokenService jwtTokenService;
 
-  public JWTAuthorizationFilter(AuthenticationManager authenticationManager, String jwtSecret) {
+  public JWTAuthorizationFilter(AuthenticationManager authenticationManager, JwtTokenService jwtTokenService) {
     super(authenticationManager);
-    this.jwtSecret = jwtSecret;
+    this.jwtTokenService = jwtTokenService;
   }
 
   @Override
@@ -48,15 +44,12 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     String token = header.replace("Bearer ", "");
 
     try {
-
-      DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(jwtSecret))
-          .build()
-          .verify(token);
+      DecodedJWT decodedJWT = jwtTokenService.verify(token);
 
       String username = decodedJWT.getSubject();
 
-      String rolesString = decodedJWT.getClaim("roles").asString();
-      List<GrantedAuthority> authorities = Arrays.stream(rolesString.split(","))
+      List<GrantedAuthority> authorities = decodedJWT.getClaim("roles").asList(String.class)
+          .stream()
           .map(SimpleGrantedAuthority::new)
           .collect(Collectors.toList());
 
@@ -70,5 +63,4 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token no válido o expirado");
     }
   }
-
 }
