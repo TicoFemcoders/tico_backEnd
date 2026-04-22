@@ -15,6 +15,7 @@ import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
 import com.femcoders.tico.exception.BadRequestException;
+import com.femcoders.tico.exception.RateLimitException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.ActivationTokenRepository;
 import com.femcoders.tico.repository.UserRepository;
@@ -32,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final ActivationTokenRepository tokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final RateLimiterService rateLimiterService;
 
     @Override
     public User getAuthenticatedUser() {
@@ -62,6 +64,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void requestReset(String email) {
+        if (!rateLimiterService.tryConsume(email)) {
+            throw new RateLimitException("Demasiados intentos. Espera 15 minutos antes de volver a intentarlo");
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
 

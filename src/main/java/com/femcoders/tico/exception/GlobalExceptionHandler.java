@@ -93,6 +93,11 @@ public class GlobalExceptionHandler {
                 "El identificador '" + ex.getName() + "' no tiene un formato válido", null);
     }
 
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<Map<String, Object>> handleRateLimit(RateLimitException ex) {
+        return responseBuilder.build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), null);
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Map<String, Object>> handleMethodNotSupported(
             HttpRequestMethodNotSupportedException ex) {
