@@ -14,6 +14,8 @@ import com.femcoders.tico.dto.request.LabelRequest;
 import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
+import com.femcoders.tico.exception.BadRequestException;
+import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -80,7 +82,7 @@ public class LabelServiceImpl implements LabelService {
         .anyMatch(t -> t.getStatus() != TicketStatus.CLOSED);
 
     if (hasActiveTickets) {
-      throw new IllegalStateException("La etiqueta está en uso por tickets activos. No se puede desactivar.");
+      throw new BadRequestException("La etiqueta está en uso por tickets activos. No se puede desactivar.");
     }
 
     label.setIsActive(false);
