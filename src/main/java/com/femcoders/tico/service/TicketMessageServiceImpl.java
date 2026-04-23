@@ -1,19 +1,22 @@
 package com.femcoders.tico.service;
 
-import org.springframework.security.access.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
-import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
+import com.femcoders.tico.dto.request.TicketMessageRequest;
+import com.femcoders.tico.dto.response.TicketMessageResponse;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
+import com.femcoders.tico.event.TicketEmailEvent;
 import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMessageMapper;
@@ -27,12 +30,12 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private final TicketMessageRepository ticketMessageRepository;
     private final TicketMessageMapper ticketMessageMapper;
     private final TicketRepository ticketRepository;
-    private final EmailService emailService;
+    private final ApplicationEventPublisher eventPublisher;
     private final AuthService authService;
     private final NotificationService notificationService;
 
     @Override
-    public List<TicketMessageResponseDTO> getMessagesByTicketId(Long ticketId) {
+    public List<TicketMessageResponse> getMessagesByTicketId(Long ticketId) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -47,7 +50,8 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     }
 
     @Override
-    public TicketMessageResponseDTO createMessage(Long ticketId, TicketMessageRequestDTO dto) {
+    @Transactional
+    public TicketMessageResponse createMessage(Long ticketId, TicketMessageRequest dto) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = loadTicketForAuthorizedUser(ticketId, currentUser);
 
@@ -60,15 +64,16 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 && ticket.getAssignedTo().getId().equals(currentUser.getId());
 
         if (authorIsAssignedAdmin) {
-            emailService.sendNewMessageEmail(
+            eventPublisher.publishEvent(new TicketEmailEvent(
+                    "NEW_MESSAGE",
                     ticket.getCreatedBy().getEmail(),
                     ticket.getCreatedBy().getName(),
                     ticket.getEmailSubject(),
-                    saved.getContent());
+                    saved.getContent()));
 
             notificationService.create(
                     ticket.getId(),
-                    currentUser.getId(),
+                    currentUser,
                     ticket.getCreatedBy().getId(),
                     "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
         }
@@ -77,7 +82,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         if (authorIsCreator && ticket.getAssignedTo() != null) {
             notificationService.create(
                     ticket.getId(),
-                    currentUser.getId(),
+                    currentUser,
                     ticket.getAssignedTo().getId(),
                     "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
         }

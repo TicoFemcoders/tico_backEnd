@@ -10,11 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.femcoders.tico.dto.request.ResetPasswordConfirmDTO;
+import com.femcoders.tico.dto.ResetPasswordConfirm;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
 import com.femcoders.tico.exception.BadRequestException;
+import com.femcoders.tico.exception.RateLimitException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.ActivationTokenRepository;
 import com.femcoders.tico.repository.UserRepository;
@@ -32,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final ActivationTokenRepository tokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final RateLimiterService rateLimiterService;
 
     @Override
     public User getAuthenticatedUser() {
@@ -62,12 +64,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void requestReset(String email) {
+        if (!rateLimiterService.tryConsume(email)) {
+            throw new RateLimitException("Demasiados intentos. Espera 15 minutos antes de volver a intentarlo");
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new BadRequestException("Activa tu cuenta antes de resetear la contraseña");
         }
+
+        tokenRepository.invalidatePendingTokens(user.getId(), TokenType.RESET);
 
         String code = generateCode();
         ActivationToken token = new ActivationToken();
@@ -82,21 +90,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void confirmReset(ResetPasswordConfirmDTO dto) {
+    public void confirmReset(ResetPasswordConfirm dto) {
         ActivationToken token = tokenRepository
                 .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.RESET)
                 .orElseThrow(() -> new ResourceNotFoundException("Token de reset", "email", dto.email()));
 
-        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Código expirado");
-        }
-
-        if (!token.getCode().equals(dto.code())) {
-            throw new BadRequestException("Código incorrecto");
-        }
-
-        if (!dto.password().equals(dto.confirmPassword())) {
-            throw new BadRequestException("Las contraseñas no coinciden");
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())
+                || !token.getCode().equals(dto.code())
+                || !dto.password().equals(dto.confirmPassword())) {
+            throw new BadRequestException("Los datos de confirmación no son válidos");
         }
 
         token.setUsed(true);

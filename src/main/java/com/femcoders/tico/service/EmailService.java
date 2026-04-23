@@ -4,16 +4,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.util.HtmlUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import com.femcoders.tico.event.TicketCreatedEvent;
+import com.femcoders.tico.event.TicketEmailEvent;
 import com.femcoders.tico.utils.EmailTemplateBuilder;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -23,6 +30,41 @@ public class EmailService {
 
     @Value("${app.mail.from}")
     private String mailFrom;
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onTicketCreated(TicketCreatedEvent event) {
+        try {
+            sendTicketCreatedEmail(
+                    event.ticket().getCreatedBy().getEmail(),
+                    event.ticket().getCreatedBy().getName(),
+                    event.ticket().getEmailSubject());
+        } catch (Exception ex) {
+            log.error("Error enviando email de creación de ticket {}: {}", event.ticket().getId(), ex.getMessage());
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onTicketEmail(TicketEmailEvent event) {
+        try {
+            switch (event.type()) {
+                case "PRIORITY_CHANGED" -> sendPriorityChangedEmail(
+                        event.toEmail(), event.userName(), event.emailSubject(), event.extraParam());
+                case "STATUS_CHANGED" -> sendStatusChangedEmail(
+                        event.toEmail(), event.userName(), event.emailSubject(), event.extraParam());
+                case "CLOSED" -> sendTicketClosedEmail(
+                        event.toEmail(), event.userName(), event.emailSubject());
+                case "REOPENED" -> sendTicketReopenedEmail(
+                        event.toEmail(), event.userName(), event.emailSubject());
+                case "NEW_MESSAGE" -> sendNewMessageEmail(
+                        event.toEmail(), event.userName(), event.emailSubject(), event.extraParam());
+                default -> log.warn("Tipo de evento de email desconocido: {}", event.type());
+            }
+        } catch (Exception ex) {
+            log.error("Error enviando email tipo {} a {}: {}", event.type(), event.toEmail(), ex.getMessage());
+        }
+    }
 
     public void sendActivationEmail(String toEmail, String userName, String code) {
         String safeUserName = HtmlUtils.htmlEscape(userName);

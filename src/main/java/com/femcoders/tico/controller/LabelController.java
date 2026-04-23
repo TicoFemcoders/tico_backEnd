@@ -1,6 +1,8 @@
 package com.femcoders.tico.controller;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.LabelRequestDTO;
-import com.femcoders.tico.dto.response.LabelResponseDTO;
+import com.femcoders.tico.dto.request.LabelRequest;
+import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.service.LabelService;
 
 import jakarta.validation.Valid;
@@ -31,25 +33,28 @@ public class LabelController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LabelResponseDTO> createLabel(@Valid @RequestBody LabelRequestDTO dto) {
+    public ResponseEntity<LabelResponse> createLabel(@Valid @RequestBody LabelRequest dto) {
         return new ResponseEntity<>(labelService.createLabel(dto), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<LabelResponseDTO>> getAllLabels() {
-        return ResponseEntity.ok(labelService.getAllLabels());
+    public ResponseEntity<Page<LabelResponse>> getAllLabels(
+            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(labelService.getAllLabels(pageable));
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<LabelResponseDTO>> searchLabels(@RequestParam String name) {
-        return ResponseEntity.ok(labelService.filterLabelsByName(name));
+    public ResponseEntity<Page<LabelResponse>> searchLabels(
+            @RequestParam String name,
+            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return ResponseEntity.ok(labelService.filterLabelsByName(name, pageable));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LabelResponseDTO> updateLabel(
+    public ResponseEntity<LabelResponse> updateLabel(
             @PathVariable Long id,
-            @RequestBody LabelRequestDTO dto) {
+            @RequestBody LabelRequest dto) {
         return ResponseEntity.ok(labelService.updateLabel(id, dto));
     }
 
@@ -62,7 +67,7 @@ public class LabelController {
 
     @PatchMapping("/{id}/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LabelResponseDTO> activateLabel(@PathVariable Long id) {
+    public ResponseEntity<LabelResponse> activateLabel(@PathVariable Long id) {
         return ResponseEntity.ok(labelService.activateLabel(id));
     }
 }

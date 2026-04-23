@@ -24,9 +24,6 @@ public class SecurityConfig {
         private final CorsConfigurationSource corsConfigurationSource;
         private final JwtTokenService jwtTokenService;
 
-        @Value("${JWT_SECRET}")
-        private String jwtSecret;
-
         public SecurityConfig(CustomAuthenticationManager customAuthenticationManager,
                         CorsConfigurationSource corsConfigurationSource,
                         JwtTokenService jwtTokenService) {
@@ -49,14 +46,14 @@ public class SecurityConfig {
                                                 .requestMatchers("/login").permitAll()
                                                 .requestMatchers("/error").permitAll()
                                                 .requestMatchers("/api/activation/**").permitAll()
-                                                .requestMatchers("/api/reset-password/**").permitAll()
+                                                .requestMatchers("/api/auth/password/**").permitAll()
                                                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .addFilter(authenticationFilter)
                                 .addFilterAfter(
-                                                new JWTAuthorizationFilter(customAuthenticationManager, jwtSecret),
+                                                new JWTAuthorizationFilter(customAuthenticationManager, jwtTokenService),
                                                 JWTAuthenticationFilter.class)
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

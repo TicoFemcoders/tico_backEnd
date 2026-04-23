@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.ActivationReqDTO;
+import com.femcoders.tico.dto.request.ActivationRequest;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -31,21 +31,15 @@ public class ActivationServiceImpl implements ActivationService {
 
   @Override
   @Transactional
-  public void activateAccount(ActivationReqDTO dto) {
+  public void activateAccount(ActivationRequest dto) {
     ActivationToken token = tokenRepository
         .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.ACTIVATION)
         .orElseThrow(() -> new ResourceNotFoundException("Token", "email", dto.email()));
 
-    if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-      throw new BadRequestException("Código expirado");
-    }
-
-    if (!token.getCode().equals(dto.code())) {
-      throw new BadRequestException("Código incorrecto");
-    }
-
-    if (!dto.password().equals(dto.confirmPassword())) {
-      throw new BadRequestException("Las contraseñas no coinciden");
+    if (token.getExpiresAt().isBefore(LocalDateTime.now())
+        || !token.getCode().equals(dto.code())
+        || !dto.password().equals(dto.confirmPassword())) {
+      throw new BadRequestException("Los datos de activación no son válidos");
     }
 
     token.setUsed(true);
@@ -67,6 +61,7 @@ public class ActivationServiceImpl implements ActivationService {
       throw new IllegalStateException("La cuenta ya está activada");
     }
 
+    tokenRepository.invalidatePendingTokens(user.getId(), TokenType.ACTIVATION);
     String code = generateCodeAndSaveToken(user, TokenType.ACTIVATION);
     emailService.sendActivationEmail(user.getEmail(), user.getName(), code);
   }

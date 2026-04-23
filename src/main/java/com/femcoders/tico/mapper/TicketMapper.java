@@ -7,9 +7,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.LabelSummaryDTO;
-import com.femcoders.tico.dto.response.TicketResponseDTO;
+import com.femcoders.tico.dto.request.TicketCreateRequest;
+import com.femcoders.tico.dto.response.LabelSummary;
+import com.femcoders.tico.dto.response.TicketResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Ticket;
 
@@ -25,21 +25,21 @@ public interface TicketMapper {
     @Mapping(target = "closedAt", ignore = true)
     @Mapping(target = "emailSubject", ignore = true)
     @Mapping(target = "labels", ignore = true)
-    Ticket toEntity(TicketCreateReqDTO dto);
+    Ticket toEntity(TicketCreateRequest dto);
 
     @Mapping(target = "createdByName", source = "createdBy.name")
     @Mapping(target = "assignedToName", source = "assignedTo.name")
     @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToSummaries")
     @Mapping(target = "closingMessage", source = "closingMessage")
-    TicketResponseDTO toResponseDTO(Ticket entity);
+    TicketResponse toResponseDTO(Ticket entity);
 
     @Named("labelsToSummaries")
-    default Set<LabelSummaryDTO> labelsToSummaries(Set<Label> labels) {
+    default Set<LabelSummary> labelsToSummaries(Set<Label> labels) {
         if (labels == null) {
             return Set.of();
         }
         return labels.stream()
-                .map(l -> new LabelSummaryDTO(l.getName(), l.getColor()))
+                .map(l -> new LabelSummary(l.getName(), l.getColor()))
                 .collect(Collectors.toSet());
     }
 }

@@ -1,15 +1,17 @@
 package com.femcoders.tico.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.LabelRequestDTO;
-import com.femcoders.tico.dto.response.LabelResponseDTO;
+import com.femcoders.tico.dto.LabelTicketCounts;
+import com.femcoders.tico.dto.request.LabelRequest;
+import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.BadRequestException;
@@ -17,6 +19,7 @@ import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
+import com.femcoders.tico.repository.TicketRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +27,13 @@ public class LabelServiceImpl implements LabelService {
 
   private final LabelRepository labelRepository;
   private final LabelMapper labelMapper;
+  private final TicketRepository ticketRepository;
 
   @Override
-  public LabelResponseDTO createLabel(LabelRequestDTO dto) {
+  public LabelResponse createLabel(LabelRequest dto) {
 
-    if (labelRepository.existsByName(dto.name())) {
-      throw new ConflictException("La etiqueta '" + dto.name() + "' ya existe");
+    if (labelRepository.existsByNameIgnoreCase(dto.name())) {
+      throw new IllegalStateException("La etiqueta '" + dto.name() + "' ya existe");
     }
     Label labelEntity = labelMapper.toEntity(dto);
 
@@ -39,21 +43,29 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
-  public List<LabelResponseDTO> getAllLabels() {
-    return labelRepository.findAll().stream()
-        .map(labelMapper::toResponseDto)
-        .toList();
+  @Transactional(readOnly = true)
+  public Page<LabelResponse> getAllLabels(Pageable pageable) {
+    LabelTicketCounts counts = LabelTicketCounts.from(
+        ticketRepository.countTicketsGroupedByLabelAndStatus());
+    return labelRepository.findAll(pageable)
+        .map(label -> new LabelResponse(
+            label.getId(),
+            label.getName(),
+            label.getColor(),
+            label.getCreatedAt(),
+            label.getIsActive(),
+            counts.activeFor(label.getId()),
+            counts.closedFor(label.getId())));
   }
 
   @Override
-  public List<LabelResponseDTO> filterLabelsByName(String name) {
-    return labelRepository.findByNameContainingIgnoreCase(name).stream()
-        .map(labelMapper::toResponseDto)
-        .toList();
+  public Page<LabelResponse> filterLabelsByName(String name, Pageable pageable) {
+    return labelRepository.findByNameContainingIgnoreCase(name, pageable)
+        .map(labelMapper::toResponseDto);
   }
 
   @Override
-  public LabelResponseDTO updateLabel(Long id, LabelRequestDTO dto) {
+  public LabelResponse updateLabel(Long id, LabelRequest dto) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
     labelMapper.updateEntity(dto, label);
@@ -78,7 +90,7 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
-  public LabelResponseDTO activateLabel(Long id) {
+  public LabelResponse activateLabel(Long id) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
     label.setIsActive(true);

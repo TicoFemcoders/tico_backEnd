@@ -8,9 +8,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
-import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
-import com.femcoders.tico.dto.request.UpdateUserReqDTO;
-import com.femcoders.tico.dto.response.UserResponseDTO;
+import com.femcoders.tico.dto.request.AdminCreateUserRequest;
+import com.femcoders.tico.dto.request.UpdateUserRequest;
+import com.femcoders.tico.dto.response.UserResponse;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
 
@@ -22,13 +22,13 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isActive", ignore = true)
-    void updateEntity(UpdateUserReqDTO dto, @MappingTarget User entity);
+    void updateEntity(UpdateUserRequest dto, @MappingTarget User entity);
 
-    User toEntity(AdminCreateUserReqDTO dto);
+    User toEntity(AdminCreateUserRequest dto);
 
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
     @Mapping(target = "openTickets", constant = "0L")
-    UserResponseDTO toResponseDTO(User entity);
+    UserResponse toResponseDTO(User entity);
 
     @Named("rolesToStrings")
     default Set<String> rolesToStrings(Set<UserRole> roles) {

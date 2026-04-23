@@ -8,34 +8,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.ResetPasswordConfirmDTO;
-import com.femcoders.tico.dto.request.ResetPasswordReqDTO;
+import com.femcoders.tico.dto.ResetPasswordConfirm;
+import com.femcoders.tico.dto.request.ResetPasswordRequest;
 import com.femcoders.tico.service.AuthService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/reset-password")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
   private final AuthService authService;
 
-  @PostMapping("/request")
-  public ResponseEntity<Void> requestReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
+  @PostMapping("/password/request")
+  public ResponseEntity<Void> requestReset(@Valid @RequestBody ResetPasswordRequest dto) {
     authService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/confirm")
-  public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirmDTO dto) {
+  @PostMapping("/password/confirm")
+  public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirm dto) {
     authService.confirmReset(dto);
-    return ResponseEntity.ok().build();
-  }
-
-  @PostMapping("/resend")
-  public ResponseEntity<Void> resendReset(@Valid @RequestBody ResetPasswordReqDTO dto) {
-    authService.requestReset(dto.email());
     return ResponseEntity.ok().build();
   }
 }
