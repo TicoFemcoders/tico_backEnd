@@ -16,12 +16,12 @@ import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
-import com.femcoders.tico.event.TicketEmailEvent;
 import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMessageMapper;
 import com.femcoders.tico.repository.TicketMessageRepository;
 import com.femcoders.tico.repository.TicketRepository;
+import com.femcoders.tico.service.event.TicketEmailEvent;
 
 @Service
 @RequiredArgsConstructor

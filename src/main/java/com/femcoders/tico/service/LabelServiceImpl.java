@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.LabelTicketCounts;
+import com.femcoders.tico.dto.response.LabelTicketCountsResponse;
 import com.femcoders.tico.dto.request.LabelRequest;
 import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.entity.Label;
@@ -45,7 +45,7 @@ public class LabelServiceImpl implements LabelService {
   @Override
   @Transactional(readOnly = true)
   public Page<LabelResponse> getAllLabels(Pageable pageable) {
-    LabelTicketCounts counts = LabelTicketCounts.from(
+    LabelTicketCountsResponse counts = LabelTicketCountsResponse.from(
         ticketRepository.countTicketsGroupedByLabelAndStatus());
     return labelRepository.findAll(pageable)
         .map(label -> new LabelResponse(

@@ -14,14 +14,14 @@ import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.enums.UserRole;
-import com.femcoders.tico.event.TicketCreatedEvent;
-import com.femcoders.tico.event.TicketEmailEvent;
 import com.femcoders.tico.exception.BadRequestException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMapper;
 import com.femcoders.tico.repository.LabelRepository;
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
+import com.femcoders.tico.service.event.TicketCreatedEvent;
+import com.femcoders.tico.service.event.TicketEmailEvent;
 import com.femcoders.tico.utils.TicketStatusHelper;
 
 import lombok.RequiredArgsConstructor;
