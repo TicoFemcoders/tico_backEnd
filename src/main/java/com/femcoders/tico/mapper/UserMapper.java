@@ -1,18 +1,18 @@
 package com.femcoders.tico.mapper;
 
-import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
-import com.femcoders.tico.dto.response.UserResponseDTO;
-import com.femcoders.tico.entity.User;
-import com.femcoders.tico.enums.UserRole;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+
+import com.femcoders.tico.dto.request.AdminCreateUserRequest;
+import com.femcoders.tico.dto.request.UpdateUserRequest;
+import com.femcoders.tico.dto.response.UserResponse;
+import com.femcoders.tico.entity.User;
+import com.femcoders.tico.enums.UserRole;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -21,38 +21,23 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "isActive", constant = "false")
-    @Mapping(target = "roles", source = "roles", qualifiedByName = "stringsToRoles")
-    User toEntity(AdminCreateUserReqDTO dto);
+    @Mapping(target = "isActive", ignore = true)
+    void updateEntity(UpdateUserRequest dto, @MappingTarget User entity);
+
+    User toEntity(AdminCreateUserRequest dto);
 
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
-    UserResponseDTO toResponseDTO(User entity);
+    @Mapping(target = "openTickets", constant = "0L")
+    UserResponse toResponseDTO(User entity);
 
     @Named("rolesToStrings")
     default Set<String> rolesToStrings(Set<UserRole> roles) {
-    if (roles == null) return Set.of();
-    return roles.stream()
-        .map(role -> "ROLE_" + role.name())
-        .collect(Collectors.toSet());
-  }
-
-  @Named("stringsToRoles")
-    default Set<UserRole> stringsToRoles(Set<String> rolesStrings) {
-        if (rolesStrings == null|| rolesStrings.isEmpty()){
+        if (roles == null) {
             return Set.of();
-        } 
-        return rolesStrings.stream()
-            .map(roleStr -> {
-               try {
-                    return UserRole.valueOf(roleStr);
-                } catch (IllegalArgumentException e) {
-                    throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Rol inválido: " + roleStr + ". Valores aceptados: ADMIN, EMPLOYEE");
-                    
-                    // BadRequestException("Rol inválido: " + roleStr +  ". Valores aceptados: ADMIN, EMPLOYEE");
-                }
-            })
-            .collect(Collectors.toSet());
+        }
+        return roles.stream()
+                .map(role -> "ROLE_" + role.name())
+                .collect(Collectors.toSet());
     }
 
 }

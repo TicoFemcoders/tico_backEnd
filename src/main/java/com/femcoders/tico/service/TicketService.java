@@ -1,30 +1,36 @@
 package com.femcoders.tico.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.TicketResponseDTO;
+import com.femcoders.tico.dto.request.TicketCreateRequest;
+import com.femcoders.tico.dto.response.TicketResponse;
 import com.femcoders.tico.enums.TicketPriority;
+import com.femcoders.tico.enums.TicketStatus;
 
 public interface TicketService {
 
-    TicketResponseDTO createTicket(TicketCreateReqDTO dto);
+    public TicketResponse createTicket(TicketCreateRequest dto);
 
-    List<TicketResponseDTO> getAllTickets();
+    public Page<TicketResponse> getAllTickets(Pageable pageable);
 
-    List<TicketResponseDTO> getTicketsByUser();
+    public Page<TicketResponse> getTicketsByUser(Pageable pageable);
 
-    List<TicketResponseDTO> getTicketsByAdmin();
+    public Page<TicketResponse> getTicketsByAdmin(Pageable pageable);
 
-    TicketResponseDTO assignAdmin(Long ticketId, Long adminId);
+    public TicketResponse assignAdmin(Long ticketId, Long adminId);
 
-    TicketResponseDTO assignLabel(Long ticketId, Long labelId);
+    public TicketResponse assignLabel(Long ticketId, Long labelId);
 
-    TicketResponseDTO removeLabel(Long ticketId, Long labelId);
+    public TicketResponse removeLabel(Long ticketId, Long labelId);
 
-    TicketResponseDTO changePriority(Long ticketId, TicketPriority priority);
+    public TicketResponse changePriority(Long ticketId, TicketPriority priority);
 
-    TicketResponseDTO closeTicket(Long ticketId);
+    public TicketResponse closeTicket(Long ticketId, String closingMessage);
 
-    TicketResponseDTO getTicketById(Long ticketId);
+    public TicketResponse getTicketById(Long ticketId);
+
+    public TicketResponse changeStatus(Long ticketId, TicketStatus status);
+
+    public TicketResponse reopenTicket(Long ticketId);
 }

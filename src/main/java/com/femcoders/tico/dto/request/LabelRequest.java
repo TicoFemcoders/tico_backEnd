@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record LabelReqDTO(
+public record LabelRequest(
 
     @NotBlank(message = "Se requiere el nombre")
     @Size(min = 2, max = 100,message = "El nombre debe tener entre 2 y 100 caracteres")

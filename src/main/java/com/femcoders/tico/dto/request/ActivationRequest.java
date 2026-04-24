@@ -3,7 +3,7 @@ package com.femcoders.tico.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record ActivationReqDTO(
+public record ActivationRequest(
 
         @NotBlank String email,
 

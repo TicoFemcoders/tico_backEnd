@@ -1,0 +1,35 @@
+package com.femcoders.tico.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.femcoders.tico.dto.ResetPasswordConfirm;
+import com.femcoders.tico.dto.request.ResetPasswordRequest;
+import com.femcoders.tico.service.AuthService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+  private final AuthService authService;
+
+  @PostMapping("/password/request")
+  public ResponseEntity<Void> requestReset(@Valid @RequestBody ResetPasswordRequest dto) {
+    authService.requestReset(dto.email());
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/password/confirm")
+  public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirm dto) {
+    authService.confirmReset(dto);
+    return ResponseEntity.ok().build();
+  }
+}

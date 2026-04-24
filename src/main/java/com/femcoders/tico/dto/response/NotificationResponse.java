@@ -2,11 +2,11 @@ package com.femcoders.tico.dto.response;
 
 import java.time.LocalDateTime;
 
-public record TicketMessageResponseDTO(
+public record NotificationResponse(
     Long id,
     Long ticketId,
-    Long authorId,
     String content,
-    Boolean isInternal,
-    LocalDateTime createdAt
-) {}
+    Boolean isRead,
+    LocalDateTime createdAt) {
+
+}

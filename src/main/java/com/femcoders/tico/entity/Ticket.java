@@ -52,12 +52,10 @@ public class Ticket {
     @Column(name = "priority", nullable = false)
     private TicketPriority priority = TicketPriority.MEDIUM;
 
-    /** Usuario que abrió el ticket */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    /** Admin asignado. Puede ser null hasta que se asigne */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to")
     private User assignedTo;
@@ -67,21 +65,22 @@ public class Ticket {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
-    /** Asunto fijo del hilo de email: "[TICO-{id}] {title}" */
     @Column(name = "email_subject", length = 255)
     private String emailSubject;
+
+    @Column(name = "closing_message", columnDefinition = "TEXT")
+    private String closingMessage;
 
     @ManyToMany
     @JoinTable(name = "ticket_labels", joinColumns = @JoinColumn(name = "ticket_id"), inverseJoinColumns = @JoinColumn(name = "label_id"))
     private Set<Label> labels = new HashSet<>();
 
-    /** Se ejecuta tras el primer save() para generar el asunto del hilo de email */
     @PostPersist
     public void generateEmailSubject() {
         this.emailSubject = "[TICO-" + this.id + "] " + this.title;

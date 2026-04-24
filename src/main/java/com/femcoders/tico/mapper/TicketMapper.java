@@ -7,8 +7,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-import com.femcoders.tico.dto.request.TicketCreateReqDTO;
-import com.femcoders.tico.dto.response.TicketResponseDTO;
+import com.femcoders.tico.dto.request.TicketCreateRequest;
+import com.femcoders.tico.dto.response.LabelSummary;
+import com.femcoders.tico.dto.response.TicketResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Ticket;
 
@@ -24,20 +25,21 @@ public interface TicketMapper {
     @Mapping(target = "closedAt", ignore = true)
     @Mapping(target = "emailSubject", ignore = true)
     @Mapping(target = "labels", ignore = true)
-    Ticket toEntity(TicketCreateReqDTO dto);
+    Ticket toEntity(TicketCreateRequest dto);
 
-    @Mapping(target = "createdById", source = "createdBy.id")
-    @Mapping(target = "assignedToId", source = "assignedTo.id")
-    @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToNames")
-    TicketResponseDTO toResponseDTO(Ticket entity);
+    @Mapping(target = "createdByName", source = "createdBy.name")
+    @Mapping(target = "assignedToName", source = "assignedTo.name")
+    @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToSummaries")
+    @Mapping(target = "closingMessage", source = "closingMessage")
+    TicketResponse toResponseDTO(Ticket entity);
 
-    @Named("labelsToNames")
-    default Set<String> labelsToNames(Set<Label> labels) {
+    @Named("labelsToSummaries")
+    default Set<LabelSummary> labelsToSummaries(Set<Label> labels) {
         if (labels == null) {
             return Set.of();
         }
         return labels.stream()
-                .map(Label::getName)
+                .map(l -> new LabelSummary(l.getName(), l.getColor()))
                 .collect(Collectors.toSet());
     }
 }
