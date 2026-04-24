@@ -1,6 +1,7 @@
 package com.femcoders.tico.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,6 @@ import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.BadRequestException;
-import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -56,6 +56,14 @@ public class LabelServiceImpl implements LabelService {
             label.getIsActive(),
             counts.activeFor(label.getId()),
             counts.closedFor(label.getId())));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<LabelResponse> getActiveLabels() {
+    return labelRepository.findByIsActiveTrue().stream()
+        .map(labelMapper::toResponseDto)
+        .toList();
   }
 
   @Override
