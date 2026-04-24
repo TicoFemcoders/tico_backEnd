@@ -30,6 +30,7 @@ public class LabelServiceImpl implements LabelService {
   private final TicketRepository ticketRepository;
 
   @Override
+  @Transactional
   public LabelResponse createLabel(LabelRequest dto) {
 
     if (labelRepository.existsByNameIgnoreCase(dto.name())) {
@@ -73,6 +74,7 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
+  @Transactional
   public LabelResponse updateLabel(Long id, LabelRequest dto) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
