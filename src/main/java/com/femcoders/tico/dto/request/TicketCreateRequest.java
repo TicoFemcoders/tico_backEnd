@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record TicketCreateReqDTO(
+public record TicketCreateRequest(
         @NotBlank(message = "El campo asunto es obligatorio")
         @Size(min = 5, max = 100, message = "El asunto debe tener entre 5 y 100 caracteres.")
         String title,

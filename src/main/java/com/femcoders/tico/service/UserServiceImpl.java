@@ -1,10 +1,12 @@
 package com.femcoders.tico.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import java.util.Map;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.femcoders.tico.exception.BadRequestException;
 import org.slf4j.Logger;
@@ -16,9 +18,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.request.AdminCreateUserReqDTO;
-import com.femcoders.tico.dto.request.UpdateUserReqDTO;
-import com.femcoders.tico.dto.response.UserResponseDTO;
+import com.femcoders.tico.dto.request.AdminCreateUserRequest;
+import com.femcoders.tico.dto.request.UpdateUserRequest;
+import com.femcoders.tico.dto.response.UserResponse;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -30,7 +32,7 @@ import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 import com.femcoders.tico.security.UserDetail;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDTO createUser(AdminCreateUserReqDTO userDto) {
+    public UserResponse createUser(AdminCreateUserRequest userDto) {
         User user = userMapper.toEntity(userDto);
         user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
         User savedUser = userRepository.save(user);
@@ -58,37 +60,47 @@ public class UserServiceImpl implements UserService {
         try {
             emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getName(), code);
         } catch (Exception e) {
-            log.warn("No se pudo enviar el email de activación a {}: {}", savedUser.getEmail(), e.getMessage());
+            log.warn("No se pudo enviar el email de activación a {}: {}", maskEmail(savedUser.getEmail()), e.getMessage());
         }
 
         return userMapper.toResponseDTO(savedUser);
     }
 
     @Override
-    public List<UserResponseDTO> getAllUsers() {
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
         Map<Long, Long> openCounts = ticketRepository.countOpenTicketsPerUser()
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
                         row -> (Long) row[1]));
 
-        return userRepository.findAll()
-                .stream()
+        return userRepository.findAll(pageable)
                 .map(user -> {
-                    UserResponseDTO base = userMapper.toResponseDTO(user);
+                    UserResponse base = userMapper.toResponseDTO(user);
                     long open = openCounts.getOrDefault(user.getId(), 0L);
-                    return new UserResponseDTO(
+                    return new UserResponse(
                             base.id(), base.name(), base.email(),
                             base.roles(), base.isActive(), open, base.createdAt());
-                })
-                .toList();
+                });
     }
 
     @Override
     @Transactional
     public void deleteUser(Long userId, String reassignEmail) {
+        User currentUser = authService.getAuthenticatedUser();
+
+        if (currentUser.getId().equals(userId)) {
+            throw new BadRequestException("No puedes eliminarte a ti mismo");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
+        if (user.getRoles().contains(UserRole.ADMIN)
+                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
+            throw new ConflictException("No puedes eliminar al único administrador del sistema");
+        }
 
         List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId)
                 .stream()
@@ -108,7 +120,14 @@ public class UserServiceImpl implements UserService {
             ticketRepository.saveAll(activeTickets);
         }
 
+        ticketRepository.unassignOpenTicketsByAdmin(userId);
         userRepository.delete(user);
+    }
+
+    private static String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return "***";
+        int at = email.indexOf('@');
+        return email.charAt(0) + "***" + email.substring(at);
     }
 
     @Override
@@ -119,20 +138,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getAllAdmins() {
-        return userRepository.findByRolesContaining(UserRole.ADMIN)
-                .stream().map(userMapper::toResponseDTO).toList();
+    public Page<UserResponse> getAllAdmins(Pageable pageable) {
+        return userRepository.findByRolesContaining(UserRole.ADMIN, pageable)
+                .map(userMapper::toResponseDTO);
     }
 
     @Override
-    public UserResponseDTO getUserById(Long id) {
+    public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
         return userMapper.toResponseDTO(user);
     }
 
     @Override
-    public UserResponseDTO updateUser(Long id, UpdateUserReqDTO dto) {
+    public UserResponse updateUser(Long id, UpdateUserRequest dto) {
         User currentUser = authService.getAuthenticatedUser();
 
         if (currentUser.getId().equals(id) && !dto.roles().contains(UserRole.ADMIN)) {
@@ -153,10 +172,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO toggleUserActive(Long id) {
+    public UserResponse toggleUserActive(Long id) {
+        User currentUser = authService.getAuthenticatedUser();
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
-        user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
+
+        boolean isCurrentlyActive = Boolean.TRUE.equals(user.getIsActive());
+
+        if (currentUser.getId().equals(id) && isCurrentlyActive) {
+            throw new BadRequestException("No puedes desactivar tu propia cuenta");
+        }
+
+        if (user.getRoles().contains(UserRole.ADMIN)
+                && isCurrentlyActive
+                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
+            throw new ConflictException("No puedes desactivar al único administrador activo del sistema");
+        }
+
+        user.setIsActive(!isCurrentlyActive);
         return userMapper.toResponseDTO(userRepository.save(user));
     }
 }

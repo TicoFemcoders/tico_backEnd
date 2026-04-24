@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.ActivationReqDTO;
-import com.femcoders.tico.dto.request.ResendCodeRequestDTO;
+import com.femcoders.tico.dto.request.ActivationRequest;
+import com.femcoders.tico.dto.request.ResendCodeRequest;
 import com.femcoders.tico.service.ActivationService;
 
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,13 +22,13 @@ public class ActivationController {
   private final ActivationService activationService;
 
   @PostMapping("/activate")
-  public ResponseEntity<Void> activate(@Valid @RequestBody ActivationReqDTO dto) {
+  public ResponseEntity<Void> activate(@Valid @RequestBody ActivationRequest dto) {
     activationService.activateAccount(dto);
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/resend")
-  public ResponseEntity<Void> resend(@Valid @RequestBody ResendCodeRequestDTO dto) {
+  public ResponseEntity<Void> resend(@Valid @RequestBody ResendCodeRequest dto) {
     activationService.resendCode(dto.email());
     return ResponseEntity.ok().build();
   }

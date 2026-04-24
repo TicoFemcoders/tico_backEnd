@@ -8,26 +8,22 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.response.NotificationResponseDTO;
-import com.femcoders.tico.dto.response.NotificationSummaryDTO;
+import com.femcoders.tico.dto.response.NotificationResponse;
+import com.femcoders.tico.dto.NotificationSummary;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.repository.TicketMessageRepository;
-import com.femcoders.tico.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
 
   private final TicketMessageRepository ticketMessageRepository;
-  private final UserRepository userRepository;
   private final AuthService authService;
 
   @Override
-  public void create(Long ticketId, Long authorId, Long recipientId, String content) {
-    User author = userRepository.findById(authorId)
-        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", authorId));
+  public void create(Long ticketId, User author, Long recipientId, String content) {
     TicketMessage notification = new TicketMessage();
     notification.setTicketId(ticketId);
     notification.setAuthor(author);
@@ -37,7 +33,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public List<NotificationResponseDTO> getUnread() {
+  public List<NotificationResponse> getUnread() {
     Long userId = authService.getAuthenticatedUser().getId();
     return ticketMessageRepository.findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId)
         .stream()
@@ -46,7 +42,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public List<NotificationResponseDTO> getAll() {
+  public List<NotificationResponse> getAll() {
     Long userId = authService.getAuthenticatedUser().getId();
     return ticketMessageRepository.findByRecipientIdOrderByCreatedAtDesc(userId)
         .stream()
@@ -55,37 +51,36 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public NotificationSummaryDTO getPaginatedSummary(int page, int size) {
+  public NotificationSummary getPaginatedSummary(int page, int size) {
     Long userId = authService.getAuthenticatedUser().getId();
     long unreadCount = ticketMessageRepository.countByRecipientIdAndIsReadFalse(userId);
     Pageable pageable = PageRequest.of(page, size);
-    List<NotificationResponseDTO> recentNotifications = ticketMessageRepository
+    List<NotificationResponse> recentNotifications = ticketMessageRepository
         .findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(userId, pageable)
         .getContent()
         .stream()
         .map(this::toDTO)
         .toList();
-    return new NotificationSummaryDTO(unreadCount, recentNotifications);
+    return new NotificationSummary(unreadCount, recentNotifications);
   }
 
   @Override
   public void markAsRead(Long notificationId) {
-    TicketMessage notification = ticketMessageRepository.findById(notificationId)
-        .orElseThrow(() -> new ResourceNotFoundException("Notificación", "id", notificationId));
-    notification.setIsRead(true);
-    ticketMessageRepository.save(notification);
+    Long userId = authService.getAuthenticatedUser().getId();
+    int updated = ticketMessageRepository.markAsReadByIdAndRecipient(notificationId, userId);
+    if (updated == 0) {
+      throw new ResourceNotFoundException("Notificación", "id", notificationId);
+    }
   }
 
   @Override
   public void markAllAsRead() {
     Long userId = authService.getAuthenticatedUser().getId();
-    List<TicketMessage> unread = ticketMessageRepository.findByRecipientIdAndIsReadFalse(userId);
-    unread.forEach(n -> n.setIsRead(true));
-    ticketMessageRepository.saveAll(unread);
+    ticketMessageRepository.markAllAsReadByRecipient(userId);
   }
 
-  private NotificationResponseDTO toDTO(TicketMessage n) {
-    return new NotificationResponseDTO(
+  private NotificationResponse toDTO(TicketMessage n) {
+    return new NotificationResponse(
         n.getId(),
         n.getTicketId(),
         n.getContent(),

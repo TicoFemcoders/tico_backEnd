@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
-        log.warn("Recurso no encontrado: {}", ex.getMessage());
+        log.warn("Recurso no encontrado: {} con campo {}", ex.getResourceName(), ex.getFieldName());
         return responseBuilder.build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
@@ -91,6 +91,11 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex) {
         return responseBuilder.build(HttpStatus.BAD_REQUEST,
                 "El identificador '" + ex.getName() + "' no tiene un formato válido", null);
+    }
+
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<Map<String, Object>> handleRateLimit(RateLimitException ex) {
+        return responseBuilder.build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), null);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

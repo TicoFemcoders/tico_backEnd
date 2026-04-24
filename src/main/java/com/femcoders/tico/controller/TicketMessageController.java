@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.request.TicketMessageRequestDTO;
-import com.femcoders.tico.dto.response.TicketMessageResponseDTO;
+import com.femcoders.tico.dto.request.TicketMessageRequest;
+import com.femcoders.tico.dto.response.TicketMessageResponse;
 import com.femcoders.tico.service.TicketMessageService;
 
 import jakarta.validation.Valid;
@@ -28,16 +28,16 @@ public class TicketMessageController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TicketMessageResponseDTO>> getMessages(@PathVariable Long ticketId) {
-        List<TicketMessageResponseDTO> messages = ticketMessageService.getMessagesByTicketId(ticketId);
+    public ResponseEntity<List<TicketMessageResponse>> getMessages(@PathVariable Long ticketId) {
+        List<TicketMessageResponse> messages = ticketMessageService.getMessagesByTicketId(ticketId);
         return ResponseEntity.ok(messages);
     }
 
     @PostMapping
-    public ResponseEntity<TicketMessageResponseDTO> createMessage(
+    public ResponseEntity<TicketMessageResponse> createMessage(
             @PathVariable Long ticketId,
-            @Valid @RequestBody TicketMessageRequestDTO message) {
-        TicketMessageResponseDTO saved = ticketMessageService.createMessage(ticketId, message);
+            @Valid @RequestBody TicketMessageRequest message) {
+        TicketMessageResponse saved = ticketMessageService.createMessage(ticketId, message);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
