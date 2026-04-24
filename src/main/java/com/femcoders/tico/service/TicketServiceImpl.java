@@ -78,7 +78,7 @@ public class TicketServiceImpl implements TicketService {
         @Transactional(readOnly = true)
         public Page<TicketResponse> getTicketsByAdmin(Pageable pageable) {
                 User admin = authService.getAuthenticatedUser();
-                return ticketsRepository.findByAssignedToIdAndStatusNot(admin.getId(), TicketStatus.CLOSED, pageable)
+                return ticketsRepository.findByAssignedToId(admin.getId(), pageable)
                                 .map(ticketMapper::toResponseDTO);
         }
 

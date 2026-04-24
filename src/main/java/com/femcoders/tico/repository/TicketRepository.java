@@ -37,7 +37,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @EntityGraph(attributePaths = {"labels", "createdBy", "assignedTo"})
     List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
 
+    Page<Ticket> findByAssignedToId(Long adminId, Pageable pageable);
+
     Page<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status, Pageable pageable);
+
+    Page<Ticket> findByAssignedToIdAndStatus(Long adminId, TicketStatus status, Pageable pageable);
 
     @Query("SELECT t.createdBy.id, COUNT(t) FROM Ticket t " +
             "WHERE t.status <> com.femcoders.tico.enums.TicketStatus.CLOSED " +
