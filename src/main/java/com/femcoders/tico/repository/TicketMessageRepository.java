@@ -36,8 +36,4 @@ public interface TicketMessageRepository extends JpaRepository<TicketMessage, Lo
     @Query("UPDATE TicketMessage m SET m.isRead = true WHERE m.id = :id AND m.recipientId = :userId AND m.isRead = false")
     int markAsReadByIdAndRecipient(@Param("id") Long id, @Param("userId") Long userId);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE TicketMessage m SET m.author = null WHERE m.author.id = :userId")
-    void clearAuthorByUserId(@Param("userId") Long userId);
 }

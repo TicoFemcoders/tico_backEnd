@@ -25,9 +25,4 @@ public interface ActivationTokenRepository extends JpaRepository<ActivationToken
          "WHERE t.user.id = :userId AND t.type = :type AND t.used = false")
   int invalidatePendingTokens(@Param("userId") Long userId, @Param("type") TokenType type);
 
-  @Modifying
-  @Transactional
-  @Query("DELETE FROM ActivationToken t WHERE t.user.id = :userId")
-  void deleteByUserId(@Param("userId") Long userId);
-
 }

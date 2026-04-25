@@ -67,15 +67,6 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(
-            @PathVariable Long id,
-            @RequestParam(required = false) String reassignEmail) {
-        userService.deleteUser(id, reassignEmail);
-        return ResponseEntity.noContent().build();
-    }
-
     @PatchMapping("/{id}/active")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> toggleUserActive(
