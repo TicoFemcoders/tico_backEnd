@@ -114,36 +114,31 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("No puedes eliminar al único administrador del sistema");
         }
 
-        List<Ticket> createdByUser = ticketRepository.findByCreatedById(userId)
-                .stream()
-                .filter(t -> t.getStatus() != TicketStatus.CLOSED)
-                .toList();
+        // createdBy tickets: silently transferred to the admin doing the deletion (avoids FK violation)
+        List<Ticket> createdByUser = ticketRepository.findByCreatedById(userId);
+        createdByUser.forEach(t -> t.setCreatedBy(currentUser));
 
-        List<Ticket> assignedToUser = user.getRoles().contains(UserRole.ADMIN)
-                ? ticketRepository.findByAssignedToIdAndStatusNot(userId, TicketStatus.CLOSED)
-                : List.of();
-
-        boolean hasActiveTickets = !createdByUser.isEmpty() || !assignedToUser.isEmpty();
-
-        if (hasActiveTickets) {
-            if (reassignEmail == null || reassignEmail.isBlank()) {
-                int total = createdByUser.size() + assignedToUser.size();
-                throw new ConflictException(
-                        "El usuario tiene " + total + " tickets activos. Proporciona un email para reasignarlos.");
+        // assignedTo tickets: only relevant for admins, requires explicit reassignment
+        if (user.getRoles().contains(UserRole.ADMIN)) {
+            List<Ticket> assignedToUser = ticketRepository.findByAssignedToIdAndStatusNot(userId,
+                    TicketStatus.CLOSED);
+            if (!assignedToUser.isEmpty()) {
+                if (reassignEmail == null || reassignEmail.isBlank()) {
+                    throw new ConflictException(
+                            "El administrador tiene " + assignedToUser.size()
+                                    + " tickets asignados activos. Proporciona un email para reasignarlos.");
+                }
+                User newOwner = userRepository.findByEmail(reassignEmail)
+                        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+                assignedToUser.forEach(t -> {
+                    t.setAssignedTo(newOwner);
+                    notificationService.create(
+                            t.getId(),
+                            currentUser,
+                            newOwner.getId(),
+                            "Se te ha asignado el ticket: " + t.getEmailSubject());
+                });
             }
-
-            User newOwner = userRepository.findByEmail(reassignEmail)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
-
-            createdByUser.forEach(t -> t.setCreatedBy(newOwner));
-            assignedToUser.forEach(t -> {
-                t.setAssignedTo(newOwner);
-                notificationService.create(
-                        t.getId(),
-                        currentUser,
-                        newOwner.getId(),
-                        "Se te ha asignado el ticket: " + t.getEmailSubject());
-            });
         }
 
         userRepository.delete(user);
