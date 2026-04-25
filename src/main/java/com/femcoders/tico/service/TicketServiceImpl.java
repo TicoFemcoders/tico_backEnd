@@ -91,6 +91,10 @@ public class TicketServiceImpl implements TicketService {
                 User admin = userRepository.findById(adminId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", adminId));
 
+                if (!Boolean.TRUE.equals(admin.getIsActive())) {
+                        throw new BadRequestException("No se puede asignar el ticket a un administrador inactivo");
+                }
+
                 User currentUser = authService.getAuthenticatedUser();
                 boolean isReassignment = ticket.getAssignedTo() != null;
                 String content = isReassignment
