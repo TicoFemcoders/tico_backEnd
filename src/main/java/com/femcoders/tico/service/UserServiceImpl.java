@@ -29,6 +29,8 @@ import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.UserMapper;
+import com.femcoders.tico.repository.ActivationTokenRepository;
+import com.femcoders.tico.repository.TicketMessageRepository;
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 import com.femcoders.tico.security.UserDetail;
@@ -47,6 +49,8 @@ public class UserServiceImpl implements UserService {
     private final ActivationService activationService;
     private final EmailService emailService;
     private final TicketRepository ticketRepository;
+    private final ActivationTokenRepository activationTokenRepository;
+    private final TicketMessageRepository ticketMessageRepository;
     private final AuthService authService;
     private final NotificationService notificationService;
 
@@ -139,6 +143,8 @@ public class UserServiceImpl implements UserService {
             }
         }
 
+        ticketMessageRepository.clearAuthorByUserId(userId);
+        activationTokenRepository.deleteByUserId(userId);
         userRepository.delete(user);
 
     }
