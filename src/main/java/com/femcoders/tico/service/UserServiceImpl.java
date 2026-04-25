@@ -23,6 +23,7 @@ import com.femcoders.tico.dto.request.UpdateUserRequest;
 import com.femcoders.tico.dto.response.UserResponse;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
+import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.enums.TokenType;
 import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.ConflictException;
@@ -60,7 +61,8 @@ public class UserServiceImpl implements UserService {
         try {
             emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getName(), code);
         } catch (Exception e) {
-            log.warn("No se pudo enviar el email de activación a {}: {}", maskEmail(savedUser.getEmail()), e.getMessage());
+            log.warn("No se pudo enviar el email de activación a {}: {}", maskEmail(savedUser.getEmail()),
+                    e.getMessage());
         }
 
         return userMapper.toResponseDTO(savedUser);
@@ -102,30 +104,36 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("No puedes eliminar al único administrador del sistema");
         }
 
-        List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId)
+        List<Ticket> createdByUser = ticketRepository.findByCreatedById(userId)
                 .stream()
-                .filter(t -> t.getStatus() != com.femcoders.tico.enums.TicketStatus.CLOSED)
+                .filter(t -> t.getStatus() != TicketStatus.CLOSED)
                 .toList();
 
-        if (!activeTickets.isEmpty()) {
+        List<Ticket> assignedToUser = ticketRepository.findByAssignedToIdAndStatusNot(userId, TicketStatus.CLOSED);
+
+        boolean hasActiveTickets = !createdByUser.isEmpty() || !assignedToUser.isEmpty();
+
+        if (hasActiveTickets) {
             if (reassignEmail == null || reassignEmail.isBlank()) {
+                int total = createdByUser.size() + assignedToUser.size();
                 throw new ConflictException(
-                        "El usuario tiene " + activeTickets.size()
-                                + " tickets abiertos. Proporciona un email para reasignarlos.");
+                        "El usuario tiene " + total + " tickets activos. Proporciona un email para reasignarlos.");
             }
+
             User newOwner = userRepository.findByEmail(reassignEmail)
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
 
-            activeTickets.forEach(t -> t.setCreatedBy(newOwner));
-            ticketRepository.saveAll(activeTickets);
+            createdByUser.forEach(t -> t.setCreatedBy(newOwner));
+            assignedToUser.forEach(t -> t.setAssignedTo(newOwner));
         }
 
-        ticketRepository.unassignOpenTicketsByAdmin(userId);
         userRepository.delete(user);
+
     }
 
     private static String maskEmail(String email) {
-        if (email == null || !email.contains("@")) return "***";
+        if (email == null || !email.contains("@"))
+            return "***";
         int at = email.indexOf('@');
         return email.charAt(0) + "***" + email.substring(at);
     }
