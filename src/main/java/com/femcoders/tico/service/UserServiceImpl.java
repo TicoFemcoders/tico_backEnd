@@ -159,7 +159,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAllAdmins(Pageable pageable) {
-        return userRepository.findByRolesContaining(UserRole.ADMIN, pageable)
+        return userRepository.findByRolesContainingAndIsActiveTrue(UserRole.ADMIN, pageable)
                 .map(userMapper::toResponseDTO);
     }
 
