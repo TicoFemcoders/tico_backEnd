@@ -33,6 +33,7 @@ import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 import com.femcoders.tico.security.UserDetail;
 
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -88,59 +89,13 @@ public class UserServiceImpl implements UserService {
                 .map(user -> {
                     UserResponse base = userMapper.toResponseDTO(user);
                     long open = user.getRoles().contains(UserRole.ADMIN)
-                            ? assignedCounts.getOrDefault(user.getId(), 0L)
+                            ? assignedCounts.getOrDefault(user.getId(), 0L) + createdCounts.getOrDefault(user.getId(), 0L)
                             : createdCounts.getOrDefault(user.getId(), 0L);
 
                     return new UserResponse(
                             base.id(), base.name(), base.email(),
                             base.roles(), base.isActive(), open, base.createdAt());
                 });
-    }
-
-    @Override
-    @Transactional
-    public void deleteUser(Long userId, String reassignEmail) {
-        User currentUser = authService.getAuthenticatedUser();
-
-        if (currentUser.getId().equals(userId)) {
-            throw new BadRequestException("No puedes eliminarte a ti mismo");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
-
-        if (user.getRoles().contains(UserRole.ADMIN)
-                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
-            throw new ConflictException("No puedes eliminar al único administrador del sistema");
-        }
-
-        List<Ticket> createdByUser = ticketRepository.findByCreatedById(userId);
-        createdByUser.forEach(t -> t.setCreatedBy(currentUser));
-
-        if (user.getRoles().contains(UserRole.ADMIN)) {
-            List<Ticket> assignedToUser = ticketRepository.findByAssignedToIdAndStatusNot(userId,
-                    TicketStatus.CLOSED);
-            if (!assignedToUser.isEmpty()) {
-                if (reassignEmail == null || reassignEmail.isBlank()) {
-                    throw new ConflictException(
-                            "El administrador tiene " + assignedToUser.size()
-                                    + " tickets asignados activos. Proporciona un email para reasignarlos.");
-                }
-                User newOwner = userRepository.findByEmail(reassignEmail)
-                        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
-                assignedToUser.forEach(t -> {
-                    t.setAssignedTo(newOwner);
-                    notificationService.create(
-                            t.getId(),
-                            currentUser,
-                            newOwner.getId(),
-                            "Se te ha asignado el ticket: " + t.getEmailSubject());
-                });
-            }
-        }
-
-        userRepository.delete(user);
-
     }
 
     private static String maskEmail(String email) {
@@ -210,24 +165,46 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("No puedes desactivar al único administrador activo del sistema");
         }
 
-        if (isCurrentlyActive && user.getRoles().contains(UserRole.ADMIN)) {
-            List<Ticket> assignedTickets = ticketRepository.findByAssignedToIdAndStatusNot(id, TicketStatus.CLOSED);
-            if (!assignedTickets.isEmpty()) {
-                if (reassignEmail == null || reassignEmail.isBlank()) {
-                    throw new ConflictException(
-                            "El administrador tiene " + assignedTickets.size()
-                                    + " tickets asignados activos. Proporciona un email para reasignarlos.");
+        if (isCurrentlyActive) {
+            if (user.getRoles().contains(UserRole.ADMIN)) {
+                List<Ticket> assignedTickets = ticketRepository.findByAssignedToIdAndStatusNot(id, TicketStatus.CLOSED);
+                List<Ticket> createdTickets = ticketRepository.findByCreatedByIdAndStatusNot(id, TicketStatus.CLOSED);
+
+                if (!assignedTickets.isEmpty() || !createdTickets.isEmpty()) {
+                    if (reassignEmail == null || reassignEmail.isBlank()) {
+                        throw new ConflictException(
+                                "El administrador tiene tickets activos. Proporciona un email para reasignarlos.");
+                    }
+                    User newOwner = userRepository.findByEmail(reassignEmail)
+                            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+                    if (!Boolean.TRUE.equals(newOwner.getIsActive()) || !newOwner.getRoles().contains(UserRole.ADMIN)) {
+                        throw new BadRequestException("El usuario destino debe ser un administrador activo.");
+                    }
+                    assignedTickets.forEach(t -> {
+                        t.setAssignedTo(newOwner);
+                        notificationService.create(t.getId(), currentUser, newOwner.getId(),
+                                "Se te ha asignado el ticket: " + t.getEmailSubject());
+                    });
+                    createdTickets.forEach(t -> {
+                        t.setCreatedBy(newOwner);
+                        notificationService.create(t.getId(), currentUser, newOwner.getId(),
+                                "Se te ha transferido el ticket: " + t.getEmailSubject());
+                    });
                 }
-                User newOwner = userRepository.findByEmail(reassignEmail)
-                        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
-                assignedTickets.forEach(t -> {
-                    t.setAssignedTo(newOwner);
-                    notificationService.create(
-                            t.getId(),
-                            currentUser,
-                            newOwner.getId(),
-                            "Se te ha asignado el ticket: " + t.getEmailSubject());
-                });
+            } else {
+                if (reassignEmail != null && !reassignEmail.isBlank()) {
+                    User newOwner = userRepository.findByEmail(reassignEmail)
+                            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+                    if (!Boolean.TRUE.equals(newOwner.getIsActive()) || !newOwner.getRoles().contains(UserRole.EMPLOYEE)) {
+                        throw new BadRequestException("El usuario destino debe ser un empleado activo.");
+                    }
+                    List<Ticket> createdTickets = ticketRepository.findByCreatedByIdAndStatusNot(id, TicketStatus.CLOSED);
+                    createdTickets.forEach(t -> {
+                        t.setCreatedBy(newOwner);
+                        notificationService.create(t.getId(), currentUser, newOwner.getId(),
+                                "Se te ha transferido el ticket: " + t.getEmailSubject());
+                    });
+                }
             }
         }
 

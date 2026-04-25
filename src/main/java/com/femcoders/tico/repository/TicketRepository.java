@@ -37,6 +37,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
         @EntityGraph(attributePaths = { "labels", "createdBy", "assignedTo" })
         List<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status);
 
+        @EntityGraph(attributePaths = { "labels", "createdBy", "assignedTo" })
+        List<Ticket> findByCreatedByIdAndStatusNot(Long userId, TicketStatus status);
+
         Page<Ticket> findByAssignedToId(Long adminId, Pageable pageable);
 
         Page<Ticket> findByAssignedToIdAndStatusNot(Long adminId, TicketStatus status, Pageable pageable);

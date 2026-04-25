@@ -40,7 +40,7 @@ public interface TicketMapper {
             return Set.of();
         }
         return labels.stream()
-                .map(l -> new LabelSummary(l.getName(), l.getColor()))
+                .map(l -> new LabelSummary(l.getName(), l.getColor(), l.getIsActive()))
                 .collect(Collectors.toSet());
     }
 }

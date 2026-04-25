@@ -46,6 +46,11 @@ public class TicketServiceImpl implements TicketService {
                 Ticket ticket = ticketMapper.toEntity(dto);
                 ticket.setCreatedBy(user);
 
+                if (dto.labelIds() != null && !dto.labelIds().isEmpty()) {
+                        labelRepository.findAllById(dto.labelIds())
+                                        .forEach(ticket.getLabels()::add);
+                }
+
                 Ticket saved = ticketsRepository.save(ticket);
 
                 if (!user.getRoles().contains(UserRole.ADMIN)) {

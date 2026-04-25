@@ -1,5 +1,7 @@
 package com.femcoders.tico.dto.request;
 
+import java.util.List;
+
 import com.femcoders.tico.enums.TicketPriority;
 
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +16,8 @@ public record TicketCreateRequest(
         @Size(min = 10, max = 500, message = "La descripción debe tener entre 10 y 500 caracteres.")
         String description,
         @NotNull(message = "Se requiere seleccionar prioridad")
-        TicketPriority priority
+        TicketPriority priority,
+        List<Long> labelIds
         ) {
 
 }
