@@ -275,6 +275,7 @@ public class TicketServiceImpl implements TicketService {
 
                 ticket.setStatus(TicketStatus.OPEN);
                 ticket.setClosedAt(null);
+                ticket.getLabels().removeIf(label -> !Boolean.TRUE.equals(label.getIsActive()));
                 Ticket saved = ticketsRepository.save(ticket);
 
                 if (isAssignedAdmin) {
