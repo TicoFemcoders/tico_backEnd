@@ -20,7 +20,5 @@ public interface UserService extends UserDetailsService {
 
     public UserResponse updateUser(Long id, UpdateUserRequest dto);
 
-    public void deleteUser(Long userId, String reassignEmail);
-
-    public UserResponse toggleUserActive(Long id);
+    public UserResponse toggleUserActive(Long id, String reassignEmail);
 }

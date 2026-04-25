@@ -1,6 +1,6 @@
 package com.femcoders.tico.service;
 
-import com.femcoders.tico.dto.ResetPasswordConfirm;
+import com.femcoders.tico.dto.request.ResetPasswordConfirmRequest;
 import com.femcoders.tico.entity.User;
 
 public interface AuthService {
@@ -11,6 +11,6 @@ public interface AuthService {
 
      public void requestReset(String email);
 
-     public void confirmReset(ResetPasswordConfirm dto);
+     public void confirmReset(ResetPasswordConfirmRequest dto);
 
 }
