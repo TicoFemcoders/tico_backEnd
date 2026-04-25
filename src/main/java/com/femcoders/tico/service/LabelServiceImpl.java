@@ -100,6 +100,7 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
+  @Transactional
   public LabelResponse activateLabel(Long id) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
