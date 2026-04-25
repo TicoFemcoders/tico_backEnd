@@ -114,11 +114,9 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("No puedes eliminar al único administrador del sistema");
         }
 
-        // createdBy tickets: silently transferred to the admin doing the deletion (avoids FK violation)
         List<Ticket> createdByUser = ticketRepository.findByCreatedById(userId);
         createdByUser.forEach(t -> t.setCreatedBy(currentUser));
 
-        // assignedTo tickets: only relevant for admins, requires explicit reassignment
         if (user.getRoles().contains(UserRole.ADMIN)) {
             List<Ticket> assignedToUser = ticketRepository.findByAssignedToIdAndStatusNot(userId,
                     TicketStatus.CLOSED);

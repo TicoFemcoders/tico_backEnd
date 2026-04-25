@@ -62,7 +62,6 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
         boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
 
-        // Assigned admin sends message (not the creator)
         if (authorIsAssignedAdmin && !authorIsCreator) {
             if (!creatorIsAdmin) {
                 eventPublisher.publishEvent(new TicketEmailEvent(
@@ -79,7 +78,6 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                     "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
         }
 
-        // Creator sends message (not the assigned admin)
         if (authorIsCreator && !authorIsAssignedAdmin && ticket.getAssignedTo() != null) {
             notificationService.create(
                     ticket.getId(),

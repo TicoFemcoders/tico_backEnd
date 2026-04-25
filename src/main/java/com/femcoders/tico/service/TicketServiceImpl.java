@@ -181,7 +181,8 @@ public class TicketServiceImpl implements TicketService {
                                         ticket.getId(),
                                         currentUser,
                                         ticket.getCreatedBy().getId(),
-                                        "Prioridad actualizada a " + TicketStatusHelper.priorityToSpanish(priority) + ": "
+                                        "Prioridad actualizada a " + TicketStatusHelper.priorityToSpanish(priority)
+                                                        + ": "
                                                         + ticket.getEmailSubject());
                 }
 
@@ -308,7 +309,6 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getLabels().removeIf(label -> !Boolean.TRUE.equals(label.getIsActive()));
                 Ticket saved = ticketsRepository.save(ticket);
 
-                // Assigned admin reopens (and is NOT the creator)
                 if (isAssignedAdmin && !isCreator) {
                         if (!creatorIsAdmin) {
                                 eventPublisher.publishEvent(new TicketEmailEvent(
@@ -325,7 +325,6 @@ public class TicketServiceImpl implements TicketService {
                                         "Tu ticket ha sido reactivado: " + ticket.getEmailSubject());
                 }
 
-                // Creator reopens (and is NOT the assigned admin)
                 if (isCreator && !isAssignedAdmin) {
                         if (!creatorIsAdmin) {
                                 eventPublisher.publishEvent(new TicketEmailEvent(
