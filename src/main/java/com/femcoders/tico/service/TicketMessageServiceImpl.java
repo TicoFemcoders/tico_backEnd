@@ -59,15 +59,19 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
         boolean authorIsAssignedAdmin = ticket.getAssignedTo() != null
                 && ticket.getAssignedTo().getId().equals(currentUser.getId());
+        boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
+        boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
 
-        if (authorIsAssignedAdmin) {
-            eventPublisher.publishEvent(new TicketEmailEvent(
-                    "NEW_MESSAGE",
-                    ticket.getCreatedBy().getEmail(),
-                    ticket.getCreatedBy().getName(),
-                    ticket.getEmailSubject(),
-                    saved.getContent()));
-
+        // Assigned admin sends message (not the creator)
+        if (authorIsAssignedAdmin && !authorIsCreator) {
+            if (!creatorIsAdmin) {
+                eventPublisher.publishEvent(new TicketEmailEvent(
+                        "NEW_MESSAGE",
+                        ticket.getCreatedBy().getEmail(),
+                        ticket.getCreatedBy().getName(),
+                        ticket.getEmailSubject(),
+                        saved.getContent()));
+            }
             notificationService.create(
                     ticket.getId(),
                     currentUser,
@@ -75,13 +79,13 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                     "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
         }
 
-        boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
-        if (authorIsCreator && ticket.getAssignedTo() != null) {
+        // Creator sends message (not the assigned admin)
+        if (authorIsCreator && !authorIsAssignedAdmin && ticket.getAssignedTo() != null) {
             notificationService.create(
                     ticket.getId(),
                     currentUser,
                     ticket.getAssignedTo().getId(),
-                    "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
+                    "Nueva respuesta en el ticket: " + ticket.getEmailSubject());
         }
 
         return ticketMessageMapper.toResponseDTO(saved);

@@ -48,6 +48,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final TicketRepository ticketRepository;
     private final AuthService authService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -118,7 +119,9 @@ public class UserServiceImpl implements UserService {
                 .filter(t -> t.getStatus() != TicketStatus.CLOSED)
                 .toList();
 
-        List<Ticket> assignedToUser = ticketRepository.findByAssignedToIdAndStatusNot(userId, TicketStatus.CLOSED);
+        List<Ticket> assignedToUser = user.getRoles().contains(UserRole.ADMIN)
+                ? ticketRepository.findByAssignedToIdAndStatusNot(userId, TicketStatus.CLOSED)
+                : List.of();
 
         boolean hasActiveTickets = !createdByUser.isEmpty() || !assignedToUser.isEmpty();
 
@@ -133,7 +136,14 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
 
             createdByUser.forEach(t -> t.setCreatedBy(newOwner));
-            assignedToUser.forEach(t -> t.setAssignedTo(newOwner));
+            assignedToUser.forEach(t -> {
+                t.setAssignedTo(newOwner);
+                notificationService.create(
+                        t.getId(),
+                        currentUser,
+                        newOwner.getId(),
+                        "Se te ha asignado el ticket: " + t.getEmailSubject());
+            });
         }
 
         userRepository.delete(user);
@@ -189,7 +199,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse toggleUserActive(Long id) {
+    @Transactional
+    public UserResponse toggleUserActive(Long id, String reassignEmail) {
         User currentUser = authService.getAuthenticatedUser();
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
@@ -204,6 +215,27 @@ public class UserServiceImpl implements UserService {
                 && isCurrentlyActive
                 && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
             throw new ConflictException("No puedes desactivar al único administrador activo del sistema");
+        }
+
+        if (isCurrentlyActive && user.getRoles().contains(UserRole.ADMIN)) {
+            List<Ticket> assignedTickets = ticketRepository.findByAssignedToIdAndStatusNot(id, TicketStatus.CLOSED);
+            if (!assignedTickets.isEmpty()) {
+                if (reassignEmail == null || reassignEmail.isBlank()) {
+                    throw new ConflictException(
+                            "El administrador tiene " + assignedTickets.size()
+                                    + " tickets asignados activos. Proporciona un email para reasignarlos.");
+                }
+                User newOwner = userRepository.findByEmail(reassignEmail)
+                        .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+                assignedTickets.forEach(t -> {
+                    t.setAssignedTo(newOwner);
+                    notificationService.create(
+                            t.getId(),
+                            currentUser,
+                            newOwner.getId(),
+                            "Se te ha asignado el ticket: " + t.getEmailSubject());
+                });
+            }
         }
 
         user.setIsActive(!isCurrentlyActive);

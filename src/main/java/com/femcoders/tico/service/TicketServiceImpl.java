@@ -48,13 +48,14 @@ public class TicketServiceImpl implements TicketService {
 
                 Ticket saved = ticketsRepository.save(ticket);
 
-                eventPublisher.publishEvent(new TicketCreatedEvent(saved));
-
-                notificationService.create(
-                                saved.getId(),
-                                user,
-                                user.getId(),
-                                "Tu ticket ha sido creado: " + saved.getEmailSubject());
+                if (!user.getRoles().contains(UserRole.ADMIN)) {
+                        eventPublisher.publishEvent(new TicketCreatedEvent(saved));
+                        notificationService.create(
+                                        saved.getId(),
+                                        user,
+                                        user.getId(),
+                                        "Tu ticket ha sido creado: " + saved.getEmailSubject());
+                }
 
                 return ticketMapper.toResponseDTO(saved);
         }
@@ -104,11 +105,13 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setAssignedTo(admin);
                 Ticket saved = ticketsRepository.save(ticket);
 
-                notificationService.create(
-                                ticket.getId(),
-                                currentUser,
-                                admin.getId(),
-                                content);
+                if (!currentUser.getId().equals(admin.getId())) {
+                        notificationService.create(
+                                        ticket.getId(),
+                                        currentUser,
+                                        admin.getId(),
+                                        content);
+                }
 
                 return ticketMapper.toResponseDTO(saved);
         }
@@ -162,19 +165,25 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setPriority(priority);
                 Ticket saved = ticketsRepository.save(ticket);
 
-                eventPublisher.publishEvent(new TicketEmailEvent(
-                                "PRIORITY_CHANGED",
-                                ticket.getCreatedBy().getEmail(),
-                                ticket.getCreatedBy().getName(),
-                                ticket.getEmailSubject(),
-                                TicketStatusHelper.priorityToSpanish(priority)));
+                boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
+                boolean creatorDiffFromCurrent = !ticket.getCreatedBy().getId().equals(currentUser.getId());
 
-                notificationService.create(
-                                ticket.getId(),
-                                currentUser,
-                                ticket.getCreatedBy().getId(),
-                                "Prioridad actualizada a " + TicketStatusHelper.priorityToSpanish(priority) + ": "
-                                                + ticket.getEmailSubject());
+                if (!creatorIsAdmin) {
+                        eventPublisher.publishEvent(new TicketEmailEvent(
+                                        "PRIORITY_CHANGED",
+                                        ticket.getCreatedBy().getEmail(),
+                                        ticket.getCreatedBy().getName(),
+                                        ticket.getEmailSubject(),
+                                        TicketStatusHelper.priorityToSpanish(priority)));
+                }
+                if (creatorDiffFromCurrent) {
+                        notificationService.create(
+                                        ticket.getId(),
+                                        currentUser,
+                                        ticket.getCreatedBy().getId(),
+                                        "Prioridad actualizada a " + TicketStatusHelper.priorityToSpanish(priority) + ": "
+                                                        + ticket.getEmailSubject());
+                }
 
                 return ticketMapper.toResponseDTO(saved);
         }
@@ -185,22 +194,28 @@ public class TicketServiceImpl implements TicketService {
                 Ticket ticket = loadTicketForAssignedAdmin(ticketId);
                 User currentUser = authService.getAuthenticatedUser();
 
+                boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
+                boolean creatorDiffFromCurrent = !ticket.getCreatedBy().getId().equals(currentUser.getId());
+
                 if (status == TicketStatus.CLOSED) {
                         ticket.close();
                         Ticket saved = ticketsRepository.save(ticket);
 
-                        eventPublisher.publishEvent(new TicketEmailEvent(
-                                        "CLOSED",
-                                        ticket.getCreatedBy().getEmail(),
-                                        ticket.getCreatedBy().getName(),
-                                        ticket.getEmailSubject(),
-                                        null));
-
-                        notificationService.create(
-                                        ticket.getId(),
-                                        currentUser,
-                                        ticket.getCreatedBy().getId(),
-                                        "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+                        if (!creatorIsAdmin) {
+                                eventPublisher.publishEvent(new TicketEmailEvent(
+                                                "CLOSED",
+                                                ticket.getCreatedBy().getEmail(),
+                                                ticket.getCreatedBy().getName(),
+                                                ticket.getEmailSubject(),
+                                                null));
+                        }
+                        if (creatorDiffFromCurrent) {
+                                notificationService.create(
+                                                ticket.getId(),
+                                                currentUser,
+                                                ticket.getCreatedBy().getId(),
+                                                "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+                        }
 
                         return ticketMapper.toResponseDTO(saved);
                 }
@@ -208,19 +223,22 @@ public class TicketServiceImpl implements TicketService {
                 ticket.setStatus(status);
                 Ticket saved = ticketsRepository.save(ticket);
 
-                eventPublisher.publishEvent(new TicketEmailEvent(
-                                "STATUS_CHANGED",
-                                ticket.getCreatedBy().getEmail(),
-                                ticket.getCreatedBy().getName(),
-                                ticket.getEmailSubject(),
-                                TicketStatusHelper.statusToSpanish(status)));
-
-                notificationService.create(
-                                ticket.getId(),
-                                currentUser,
-                                ticket.getCreatedBy().getId(),
-                                "Estado actualizado a " + TicketStatusHelper.statusToSpanish(status) + ": "
-                                                + ticket.getEmailSubject());
+                if (!creatorIsAdmin) {
+                        eventPublisher.publishEvent(new TicketEmailEvent(
+                                        "STATUS_CHANGED",
+                                        ticket.getCreatedBy().getEmail(),
+                                        ticket.getCreatedBy().getName(),
+                                        ticket.getEmailSubject(),
+                                        TicketStatusHelper.statusToSpanish(status)));
+                }
+                if (creatorDiffFromCurrent) {
+                        notificationService.create(
+                                        ticket.getId(),
+                                        currentUser,
+                                        ticket.getCreatedBy().getId(),
+                                        "Estado actualizado a " + TicketStatusHelper.statusToSpanish(status) + ": "
+                                                        + ticket.getEmailSubject());
+                }
 
                 return ticketMapper.toResponseDTO(saved);
         }
@@ -240,18 +258,24 @@ public class TicketServiceImpl implements TicketService {
                 }
                 Ticket saved = ticketsRepository.save(ticket);
 
-                eventPublisher.publishEvent(new TicketEmailEvent(
-                                "CLOSED",
-                                ticket.getCreatedBy().getEmail(),
-                                ticket.getCreatedBy().getName(),
-                                ticket.getEmailSubject(),
-                                null));
+                boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
+                boolean creatorDiffFromCurrent = !ticket.getCreatedBy().getId().equals(currentUser.getId());
 
-                notificationService.create(
-                                ticket.getId(),
-                                currentUser,
-                                ticket.getCreatedBy().getId(),
-                                "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+                if (!creatorIsAdmin) {
+                        eventPublisher.publishEvent(new TicketEmailEvent(
+                                        "CLOSED",
+                                        ticket.getCreatedBy().getEmail(),
+                                        ticket.getCreatedBy().getName(),
+                                        ticket.getEmailSubject(),
+                                        null));
+                }
+                if (creatorDiffFromCurrent) {
+                        notificationService.create(
+                                        ticket.getId(),
+                                        currentUser,
+                                        ticket.getCreatedBy().getId(),
+                                        "Tu ticket ha sido cerrado: " + ticket.getEmailSubject());
+                }
 
                 return ticketMapper.toResponseDTO(saved);
         }
@@ -277,19 +301,23 @@ public class TicketServiceImpl implements TicketService {
                                         "Solo el Admin asignado o el creador del ticket pueden reactivarlo");
                 }
 
+                boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
+
                 ticket.setStatus(TicketStatus.OPEN);
                 ticket.setClosedAt(null);
                 ticket.getLabels().removeIf(label -> !Boolean.TRUE.equals(label.getIsActive()));
                 Ticket saved = ticketsRepository.save(ticket);
 
-                if (isAssignedAdmin) {
-                        eventPublisher.publishEvent(new TicketEmailEvent(
-                                        "REOPENED",
-                                        ticket.getCreatedBy().getEmail(),
-                                        ticket.getCreatedBy().getName(),
-                                        ticket.getEmailSubject(),
-                                        null));
-
+                // Assigned admin reopens (and is NOT the creator)
+                if (isAssignedAdmin && !isCreator) {
+                        if (!creatorIsAdmin) {
+                                eventPublisher.publishEvent(new TicketEmailEvent(
+                                                "REOPENED",
+                                                ticket.getCreatedBy().getEmail(),
+                                                ticket.getCreatedBy().getName(),
+                                                ticket.getEmailSubject(),
+                                                null));
+                        }
                         notificationService.create(
                                         ticket.getId(),
                                         currentUser,
@@ -297,12 +325,23 @@ public class TicketServiceImpl implements TicketService {
                                         "Tu ticket ha sido reactivado: " + ticket.getEmailSubject());
                 }
 
-                if (isCreator && ticket.getAssignedTo() != null) {
-                        notificationService.create(
-                                        ticket.getId(),
-                                        currentUser,
-                                        ticket.getAssignedTo().getId(),
-                                        "El empleado ha reactivado el ticket: " + ticket.getEmailSubject());
+                // Creator reopens (and is NOT the assigned admin)
+                if (isCreator && !isAssignedAdmin) {
+                        if (!creatorIsAdmin) {
+                                eventPublisher.publishEvent(new TicketEmailEvent(
+                                                "REOPENED",
+                                                ticket.getCreatedBy().getEmail(),
+                                                ticket.getCreatedBy().getName(),
+                                                ticket.getEmailSubject(),
+                                                null));
+                        }
+                        if (ticket.getAssignedTo() != null) {
+                                notificationService.create(
+                                                ticket.getId(),
+                                                currentUser,
+                                                ticket.getAssignedTo().getId(),
+                                                "El ticket ha sido reactivado: " + ticket.getEmailSubject());
+                        }
                 }
 
                 return ticketMapper.toResponseDTO(saved);
