@@ -42,7 +42,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("No tienes acceso a los mensajes de este ticket");
         }
-        return ticketMessageRepository.findByTicketIdOrderByCreatedAtDesc(ticketId, pageable)
+        return ticketMessageRepository.findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(ticketId, pageable)
                 .map(ticketMessageMapper::toResponseDTO);
     }
 

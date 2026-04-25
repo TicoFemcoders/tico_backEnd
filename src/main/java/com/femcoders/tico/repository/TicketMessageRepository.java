@@ -14,7 +14,7 @@ import com.femcoders.tico.entity.TicketMessage;
 
 public interface TicketMessageRepository extends JpaRepository<TicketMessage, Long> {
 
-    Page<TicketMessage> findByTicketIdOrderByCreatedAtDesc(Long ticketId, Pageable pageable);
+    Page<TicketMessage> findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(Long ticketId, Pageable pageable);
 
     List<TicketMessage> findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(Long recipientId);
 
