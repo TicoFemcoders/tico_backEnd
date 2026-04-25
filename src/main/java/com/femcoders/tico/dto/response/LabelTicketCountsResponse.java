@@ -1,4 +1,4 @@
-package com.femcoders.tico.dto;
+package com.femcoders.tico.dto.response;
 
 import java.util.HashMap;
 import java.util.List;
@@ -6,9 +6,9 @@ import java.util.Map;
 
 import com.femcoders.tico.enums.TicketStatus;
 
-public record LabelTicketCounts(Map<Long, Long> active, Map<Long, Long> closed) {
+public record LabelTicketCountsResponse(Map<Long, Long> active, Map<Long, Long> closed) {
 
-    public static LabelTicketCounts from(List<Object[]> rows) {
+    public static LabelTicketCountsResponse from(List<Object[]> rows) {
         Map<Long, Long> active = new HashMap<>();
         Map<Long, Long> closed = new HashMap<>();
         for (Object[] row : rows) {
@@ -21,7 +21,7 @@ public record LabelTicketCounts(Map<Long, Long> active, Map<Long, Long> closed) 
                 active.merge(labelId, count, Long::sum);
             }
         }
-        return new LabelTicketCounts(active, closed);
+        return new LabelTicketCountsResponse(active, closed);
     }
 
     public long activeFor(Long labelId) {
