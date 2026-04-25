@@ -1,6 +1,7 @@
 package com.femcoders.tico.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,13 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import com.femcoders.tico.dto.LabelTicketCounts;
+import com.femcoders.tico.dto.response.LabelTicketCountsResponse;
 import com.femcoders.tico.dto.request.LabelRequest;
 import com.femcoders.tico.dto.response.LabelResponse;
 import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.exception.BadRequestException;
-import com.femcoders.tico.exception.ConflictException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.LabelMapper;
 import com.femcoders.tico.repository.LabelRepository;
@@ -30,6 +30,7 @@ public class LabelServiceImpl implements LabelService {
   private final TicketRepository ticketRepository;
 
   @Override
+  @Transactional
   public LabelResponse createLabel(LabelRequest dto) {
 
     if (labelRepository.existsByNameIgnoreCase(dto.name())) {
@@ -45,7 +46,7 @@ public class LabelServiceImpl implements LabelService {
   @Override
   @Transactional(readOnly = true)
   public Page<LabelResponse> getAllLabels(Pageable pageable) {
-    LabelTicketCounts counts = LabelTicketCounts.from(
+    LabelTicketCountsResponse counts = LabelTicketCountsResponse.from(
         ticketRepository.countTicketsGroupedByLabelAndStatus());
     return labelRepository.findAll(pageable)
         .map(label -> new LabelResponse(
@@ -59,12 +60,21 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<LabelResponse> getActiveLabels() {
+    return labelRepository.findByIsActiveTrue().stream()
+        .map(labelMapper::toResponseDto)
+        .toList();
+  }
+
+  @Override
   public Page<LabelResponse> filterLabelsByName(String name, Pageable pageable) {
     return labelRepository.findByNameContainingIgnoreCase(name, pageable)
         .map(labelMapper::toResponseDto);
   }
 
   @Override
+  @Transactional
   public LabelResponse updateLabel(Long id, LabelRequest dto) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));
@@ -90,6 +100,7 @@ public class LabelServiceImpl implements LabelService {
   }
 
   @Override
+  @Transactional
   public LabelResponse activateLabel(Long id) {
     Label label = labelRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Etiqueta", "id", id));

@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.femcoders.tico.dto.ResetPasswordConfirm;
+import com.femcoders.tico.dto.request.ResetPasswordConfirmRequest;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void confirmReset(ResetPasswordConfirm dto) {
+    public void confirmReset(ResetPasswordConfirmRequest dto) {
         ActivationToken token = tokenRepository
                 .findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc(dto.email(), TokenType.RESET)
                 .orElseThrow(() -> new ResourceNotFoundException("Token de reset", "email", dto.email()));

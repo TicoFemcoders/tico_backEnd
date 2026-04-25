@@ -3,7 +3,7 @@ package com.femcoders.tico.service;
 import java.util.List;
 
 import com.femcoders.tico.dto.response.NotificationResponse;
-import com.femcoders.tico.dto.NotificationSummary;
+import com.femcoders.tico.dto.response.NotificationSummaryResponse;
 import com.femcoders.tico.entity.User;
 
 public interface NotificationService {
@@ -14,7 +14,7 @@ public interface NotificationService {
 
   public List<NotificationResponse> getAll();
 
-  public NotificationSummary getPaginatedSummary(int page, int size);
+  public NotificationSummaryResponse getPaginatedSummary(int page, int size);
 
   public void markAsRead(Long notificationId);
 

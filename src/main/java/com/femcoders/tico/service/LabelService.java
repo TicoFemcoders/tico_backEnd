@@ -1,5 +1,7 @@
 package com.femcoders.tico.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,6 +13,8 @@ public interface LabelService {
     public LabelResponse createLabel(LabelRequest dto);
 
     public Page<LabelResponse> getAllLabels(Pageable pageable);
+
+    public List<LabelResponse> getActiveLabels();
 
     public Page<LabelResponse> filterLabelsByName(String name, Pageable pageable);
 

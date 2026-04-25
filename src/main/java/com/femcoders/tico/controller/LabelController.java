@@ -1,5 +1,7 @@
 package com.femcoders.tico.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -41,6 +43,11 @@ public class LabelController {
     public ResponseEntity<Page<LabelResponse>> getAllLabels(
             @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         return ResponseEntity.ok(labelService.getAllLabels(pageable));
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<LabelResponse>> getActiveLabels() {
+        return ResponseEntity.ok(labelService.getActiveLabels());
     }
 
     @GetMapping("/filter")

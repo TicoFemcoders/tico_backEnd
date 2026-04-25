@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.femcoders.tico.dto.ResetPasswordConfirm;
+import com.femcoders.tico.dto.request.ResetPasswordConfirmRequest;
 import com.femcoders.tico.dto.request.ResetPasswordRequest;
 import com.femcoders.tico.service.AuthService;
 
@@ -28,7 +28,7 @@ public class AuthController {
   }
 
   @PostMapping("/password/confirm")
-  public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirm dto) {
+  public ResponseEntity<Void> confirmReset(@Valid @RequestBody ResetPasswordConfirmRequest dto) {
     authService.confirmReset(dto);
     return ResponseEntity.ok().build();
   }
