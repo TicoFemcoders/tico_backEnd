@@ -1,9 +1,8 @@
 package com.femcoders.tico.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +34,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
     private final NotificationService notificationService;
 
     @Override
-    public List<TicketMessageResponse> getMessagesByTicketId(Long ticketId) {
+    public Page<TicketMessageResponse> getMessagesByTicketId(Long ticketId, Pageable pageable) {
         User currentUser = authService.getAuthenticatedUser();
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
@@ -43,10 +42,8 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
             throw new AccessDeniedException("No tienes acceso a los mensajes de este ticket");
         }
-        return ticketMessageRepository.findByTicketId(ticketId)
-                .stream()
-                .map(ticketMessageMapper::toResponseDTO)
-                .collect(Collectors.toList());
+        return ticketMessageRepository.findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(ticketId, pageable)
+                .map(ticketMessageMapper::toResponseDTO);
     }
 
     @Override
@@ -62,15 +59,18 @@ public class TicketMessageServiceImpl implements TicketMessageService {
 
         boolean authorIsAssignedAdmin = ticket.getAssignedTo() != null
                 && ticket.getAssignedTo().getId().equals(currentUser.getId());
+        boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
+        boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
 
-        if (authorIsAssignedAdmin) {
-            eventPublisher.publishEvent(new TicketEmailEvent(
-                    "NEW_MESSAGE",
-                    ticket.getCreatedBy().getEmail(),
-                    ticket.getCreatedBy().getName(),
-                    ticket.getEmailSubject(),
-                    saved.getContent()));
-
+        if (authorIsAssignedAdmin && !authorIsCreator) {
+            if (!creatorIsAdmin) {
+                eventPublisher.publishEvent(new TicketEmailEvent(
+                        "NEW_MESSAGE",
+                        ticket.getCreatedBy().getEmail(),
+                        ticket.getCreatedBy().getName(),
+                        ticket.getEmailSubject(),
+                        saved.getContent()));
+            }
             notificationService.create(
                     ticket.getId(),
                     currentUser,
@@ -78,13 +78,12 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                     "Nueva respuesta en tu ticket: " + ticket.getEmailSubject());
         }
 
-        boolean authorIsCreator = ticket.getCreatedBy().getId().equals(currentUser.getId());
-        if (authorIsCreator && ticket.getAssignedTo() != null) {
+        if (authorIsCreator && !authorIsAssignedAdmin && ticket.getAssignedTo() != null) {
             notificationService.create(
                     ticket.getId(),
                     currentUser,
                     ticket.getAssignedTo().getId(),
-                    "Nueva respuesta del empleado en: " + ticket.getEmailSubject());
+                    "Nueva respuesta en el ticket: " + ticket.getEmailSubject());
         }
 
         return ticketMessageMapper.toResponseDTO(saved);

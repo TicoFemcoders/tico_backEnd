@@ -78,7 +78,9 @@ public class UserController {
 
     @PatchMapping("/{id}/active")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> toggleUserActive(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.toggleUserActive(id));
+    public ResponseEntity<UserResponse> toggleUserActive(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reassignEmail) {
+        return ResponseEntity.ok(userService.toggleUserActive(id, reassignEmail));
     }
 }
