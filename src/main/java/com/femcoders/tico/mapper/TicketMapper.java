@@ -28,6 +28,7 @@ public interface TicketMapper {
     Ticket toEntity(TicketCreateRequest dto);
 
     @Mapping(target = "createdByName", source = "createdBy.name")
+    @Mapping(target = "assignedToId", source = "assignedTo.id")
     @Mapping(target = "assignedToName", source = "assignedTo.name")
     @Mapping(target = "labels", source = "labels", qualifiedByName = "labelsToSummaries")
     @Mapping(target = "closingMessage", source = "closingMessage")

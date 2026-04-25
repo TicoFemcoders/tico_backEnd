@@ -71,7 +71,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        Map<Long, Long> openCounts = ticketRepository.countOpenTicketsPerUser()
+        Map<Long, Long> createdCounts = ticketRepository.countOpenTicketsPerUser()
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]));
+
+        Map<Long, Long> assignedCounts = ticketRepository.countOpenTicketsPerAdmin()
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
@@ -80,7 +86,10 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(pageable)
                 .map(user -> {
                     UserResponse base = userMapper.toResponseDTO(user);
-                    long open = openCounts.getOrDefault(user.getId(), 0L);
+                    long open = user.getRoles().contains(UserRole.ADMIN)
+                            ? assignedCounts.getOrDefault(user.getId(), 0L)
+                            : createdCounts.getOrDefault(user.getId(), 0L);
+
                     return new UserResponse(
                             base.id(), base.name(), base.email(),
                             base.roles(), base.isActive(), open, base.createdAt());
