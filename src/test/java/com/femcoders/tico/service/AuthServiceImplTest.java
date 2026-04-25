@@ -1,17 +1,23 @@
 package com.femcoders.tico.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -19,7 +25,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.femcoders.tico.dto.ResetPasswordConfirm;
+import com.femcoders.tico.dto.request.ResetPasswordConfirmRequest;
 import com.femcoders.tico.entity.ActivationToken;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TokenType;
@@ -137,7 +143,7 @@ class AuthServiceImplTest {
         token.setUsed(false);
         token.setExpiresAt(LocalDateTime.now().plusMinutes(10));
 
-        ResetPasswordConfirm dto = new ResetPasswordConfirm("ana@test.com", "ABC123", "nuevaPass123", "nuevaPass123");
+        ResetPasswordConfirmRequest dto = new ResetPasswordConfirmRequest("ana@test.com", "ABC123", "nuevaPass123", "nuevaPass123");
 
         when(tokenRepository.findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc("ana@test.com", TokenType.RESET))
                 .thenReturn(Optional.of(token));
@@ -158,7 +164,7 @@ class AuthServiceImplTest {
         token.setUsed(false);
         token.setExpiresAt(LocalDateTime.now().plusMinutes(10));
 
-        ResetPasswordConfirm dto = new ResetPasswordConfirm("ana@test.com", "WRONG1", "nuevaPass123", "nuevaPass123");
+        ResetPasswordConfirmRequest dto = new ResetPasswordConfirmRequest("ana@test.com", "WRONG1", "nuevaPass123", "nuevaPass123");
 
         when(tokenRepository.findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc("ana@test.com", TokenType.RESET))
                 .thenReturn(Optional.of(token));
@@ -174,7 +180,7 @@ class AuthServiceImplTest {
         token.setUsed(false);
         token.setExpiresAt(LocalDateTime.now().minusMinutes(10));
 
-        ResetPasswordConfirm dto = new ResetPasswordConfirm("ana@test.com", "ABC123", "nuevaPass123", "nuevaPass123");
+        ResetPasswordConfirmRequest dto = new ResetPasswordConfirmRequest("ana@test.com", "ABC123", "nuevaPass123", "nuevaPass123");
 
         when(tokenRepository.findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc("ana@test.com", TokenType.RESET))
                 .thenReturn(Optional.of(token));
@@ -190,7 +196,7 @@ class AuthServiceImplTest {
         token.setUsed(false);
         token.setExpiresAt(LocalDateTime.now().plusMinutes(10));
 
-        ResetPasswordConfirm dto = new ResetPasswordConfirm("ana@test.com", "ABC123", "pass1", "pass2");
+        ResetPasswordConfirmRequest dto = new ResetPasswordConfirmRequest("ana@test.com", "ABC123", "pass1", "pass2");
 
         when(tokenRepository.findFirstByUserEmailAndTypeAndUsedFalseOrderByCreatedAtDesc("ana@test.com", TokenType.RESET))
                 .thenReturn(Optional.of(token));
