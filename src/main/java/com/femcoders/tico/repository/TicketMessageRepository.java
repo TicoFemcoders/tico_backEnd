@@ -14,7 +14,7 @@ import com.femcoders.tico.entity.TicketMessage;
 
 public interface TicketMessageRepository extends JpaRepository<TicketMessage, Long> {
 
-    List<TicketMessage> findByTicketId(Long ticketId);
+    Page<TicketMessage> findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(Long ticketId, Pageable pageable);
 
     List<TicketMessage> findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(Long recipientId);
 
@@ -35,4 +35,5 @@ public interface TicketMessageRepository extends JpaRepository<TicketMessage, Lo
     @Transactional
     @Query("UPDATE TicketMessage m SET m.isRead = true WHERE m.id = :id AND m.recipientId = :userId AND m.isRead = false")
     int markAsReadByIdAndRecipient(@Param("id") Long id, @Param("userId") Long userId);
+
 }

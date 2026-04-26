@@ -92,7 +92,7 @@ class TicketRepositoryTest {
 
         assertEquals(1, updated);
         List<Ticket> assignedOpen = ticketRepository.findByAssignedToIdAndStatusNot(
-            admin.getId(), TicketStatus.CLOSED);
+                admin.getId(), TicketStatus.CLOSED);
         assertTrue(assignedOpen.isEmpty());
     }
 
@@ -102,9 +102,40 @@ class TicketRepositoryTest {
         createTicket("Ticket cerrado", TicketStatus.CLOSED, admin);
 
         List<Ticket> result = ticketRepository.findByAssignedToIdAndStatusNot(
-            admin.getId(), TicketStatus.CLOSED);
+                admin.getId(), TicketStatus.CLOSED);
 
         assertEquals(1, result.size());
         assertEquals(TicketStatus.OPEN, result.get(0).getStatus());
+    }
+
+    @Test
+    void whenFindByAssignedToIdAndStatusNot_withNoTickets_thenReturnsEmpty() {
+        List<Ticket> result = ticketRepository.findByAssignedToIdAndStatusNot(
+                admin.getId(), TicketStatus.CLOSED);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void whenUnassignOpenTicketsByAdmin_withNoTickets_thenReturnsZero() {
+        int updated = ticketRepository.unassignOpenTicketsByAdmin(admin.getId());
+
+        assertEquals(0, updated);
+    }
+
+    @Test
+    void whenCountOpenTicketsPerUser_withNoTickets_thenReturnsEmpty() {
+        List<Object[]> result = ticketRepository.countOpenTicketsPerUser();
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void whenCountTicketsGroupedByLabelAndStatus_withNoLabels_thenReturnsEmpty() {
+        createTicket("Ticket sin label", TicketStatus.OPEN, admin);
+
+        List<Object[]> result = ticketRepository.countTicketsGroupedByLabelAndStatus();
+
+        assertTrue(result.isEmpty());
     }
 }
