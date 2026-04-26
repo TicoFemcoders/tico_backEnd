@@ -1,6 +1,7 @@
 package com.femcoders.tico.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
@@ -18,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import com.femcoders.tico.dto.request.TicketCreateRequest;
 import com.femcoders.tico.dto.response.TicketResponse;
+import com.femcoders.tico.entity.Label;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.TicketPriority;
@@ -33,13 +35,20 @@ import com.femcoders.tico.repository.UserRepository;
 @ExtendWith(MockitoExtension.class)
 class TicketServiceImplTest {
 
-    @Mock private TicketRepository ticketRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private LabelRepository labelRepository;
-    @Mock private TicketMapper ticketMapper;
-    @Mock private AuthService authService;
-    @Mock private ApplicationEventPublisher eventPublisher;
-    @Mock private NotificationService notificationService;
+    @Mock
+    private TicketRepository ticketRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private LabelRepository labelRepository;
+    @Mock
+    private TicketMapper ticketMapper;
+    @Mock
+    private AuthService authService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private TicketServiceImpl ticketService;
@@ -79,7 +88,6 @@ class TicketServiceImplTest {
                 "Employee Test", null, null,
                 Set.of(), null, null, null, null, null);
     }
-
 
     @Test
     void whenCreateTicket_thenReturnsTicketResponse() {
@@ -140,7 +148,6 @@ class TicketServiceImplTest {
                 () -> ticketService.assignAdmin(1L, 99L));
     }
 
-
     @Test
     void whenCloseTicket_thenStatusIsClosed() {
         ticket.setAssignedTo(admin);
@@ -167,7 +174,6 @@ class TicketServiceImplTest {
 
         verify(ticketRepository, never()).save(any());
     }
-
 
     @Test
     void whenReopenTicket_thenStatusIsOpen() {
@@ -200,7 +206,6 @@ class TicketServiceImplTest {
                 () -> ticketService.reopenTicket(99L));
     }
 
-
     @Test
     void whenGetTicketById_asEmployee_thenReturnsOwnTicket() {
         when(authService.getAuthenticatedUser()).thenReturn(employee);
@@ -224,5 +229,161 @@ class TicketServiceImplTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> ticketService.getTicketById(1L));
+    }
+
+    @Test
+    void whenAssignLabel_thenLabelIsAssigned() {
+        Label label = new Label();
+        label.setId(1L);
+
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(labelRepository.findById(1L)).thenReturn(Optional.of(label));
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        when(ticketMapper.toResponseDTO(ticket)).thenReturn(ticketResponse);
+
+        TicketResponse result = ticketService.assignLabel(1L, 1L);
+
+        assertNotNull(result);
+        assertTrue(ticket.getLabels().contains(label));
+        verify(ticketRepository, times(1)).save(ticket);
+    }
+
+    @Test
+    void whenAssignLabel_withNonExistentTicket_thenThrowsResourceNotFoundException() {
+        when(ticketRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ticketService.assignLabel(99L, 1L));
+    }
+
+    @Test
+    void whenAssignLabel_withNonExistentLabel_thenThrowsResourceNotFoundException() {
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(labelRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ticketService.assignLabel(1L, 99L));
+    }
+
+    @Test
+    void whenRemoveLabel_thenLabelIsRemoved() {
+        Label label = new Label();
+        label.setId(1L);
+        ticket.getLabels().add(label);
+
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(labelRepository.findById(1L)).thenReturn(Optional.of(label));
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        when(ticketMapper.toResponseDTO(ticket)).thenReturn(ticketResponse);
+
+        TicketResponse result = ticketService.removeLabel(1L, 1L);
+
+        assertNotNull(result);
+        assertFalse(ticket.getLabels().contains(label));
+        verify(ticketRepository, times(1)).save(ticket);
+    }
+
+    @Test
+    void whenRemoveLabel_withNonExistentTicket_thenThrowsResourceNotFoundException() {
+        when(ticketRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ticketService.removeLabel(99L, 1L));
+    }
+
+    @Test
+    void whenRemoveLabel_withNonExistentLabel_thenThrowsResourceNotFoundException() {
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(labelRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ticketService.removeLabel(1L, 99L));
+    }
+
+    @Test
+    void whenChangePriority_thenPriorityIsChanged() {
+        ticket.setAssignedTo(admin);
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(authService.getAuthenticatedUser()).thenReturn(admin);
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        when(ticketMapper.toResponseDTO(ticket)).thenReturn(ticketResponse);
+
+        TicketResponse result = ticketService.changePriority(1L, TicketPriority.HIGH);
+
+        assertNotNull(result);
+        assertEquals(TicketPriority.HIGH, ticket.getPriority());
+        verify(ticketRepository, times(1)).save(ticket);
+    }
+
+    @Test
+    void whenChangePriority_withNonExistentTicket_thenThrowsResourceNotFoundException() {
+        when(ticketRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ticketService.changePriority(99L, TicketPriority.HIGH));
+    }
+
+    @Test
+    void whenChangePriority_withDifferentAssignedAdmin_thenThrowsBadRequestException() {
+        User otherAdmin = new User();
+        otherAdmin.setId(99L);
+        ticket.setAssignedTo(otherAdmin);
+
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(authService.getAuthenticatedUser()).thenReturn(admin);
+
+        assertThrows(BadRequestException.class,
+                () -> ticketService.changePriority(1L, TicketPriority.HIGH));
+    }
+
+    @Test
+    void whenChangeStatus_thenStatusIsChanged() {
+        ticket.setAssignedTo(admin);
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(authService.getAuthenticatedUser()).thenReturn(admin);
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        when(ticketMapper.toResponseDTO(ticket)).thenReturn(ticketResponse);
+
+        TicketResponse result = ticketService.changeStatus(1L, TicketStatus.IN_PROGRESS);
+
+        assertNotNull(result);
+        assertEquals(TicketStatus.IN_PROGRESS, ticket.getStatus());
+        verify(ticketRepository, times(1)).save(ticket);
+    }
+
+    @Test
+    void whenChangeStatus_toClosed_thenStatusIsClosed() {
+        ticket.setAssignedTo(admin);
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(authService.getAuthenticatedUser()).thenReturn(admin);
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        when(ticketMapper.toResponseDTO(ticket)).thenReturn(ticketResponse);
+
+        TicketResponse result = ticketService.changeStatus(1L, TicketStatus.CLOSED);
+
+        assertNotNull(result);
+        assertEquals(TicketStatus.CLOSED, ticket.getStatus());
+        verify(ticketRepository, times(1)).save(ticket);
+    }
+
+    @Test
+    void whenChangeStatus_withNonExistentTicket_thenThrowsResourceNotFoundException() {
+        when(ticketRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> ticketService.changeStatus(99L, TicketStatus.IN_PROGRESS));
+    }
+
+    @Test
+    void whenChangeStatus_withDifferentAssignedAdmin_thenThrowsBadRequestException() {
+        User otherAdmin = new User();
+        otherAdmin.setId(99L);
+        ticket.setAssignedTo(otherAdmin);
+
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+        when(authService.getAuthenticatedUser()).thenReturn(admin);
+
+        assertThrows(BadRequestException.class,
+                () -> ticketService.changeStatus(1L, TicketStatus.IN_PROGRESS));
     }
 }
