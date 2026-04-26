@@ -80,7 +80,6 @@ class TicketServiceImplTest {
                 Set.of(), null, null, null, null, null);
     }
 
-    // ---- createTicket ----
 
     @Test
     void whenCreateTicket_thenReturnsTicketResponse() {
@@ -98,8 +97,6 @@ class TicketServiceImplTest {
         assertEquals("Titulo test", result.title());
         verify(ticketRepository, times(1)).save(ticket);
     }
-
-    // ---- assignAdmin ----
 
     @Test
     void whenAssignAdmin_thenAdminIsAssigned() {
@@ -143,7 +140,6 @@ class TicketServiceImplTest {
                 () -> ticketService.assignAdmin(1L, 99L));
     }
 
-    // ---- closeTicket ----
 
     @Test
     void whenCloseTicket_thenStatusIsClosed() {
@@ -172,7 +168,6 @@ class TicketServiceImplTest {
         verify(ticketRepository, never()).save(any());
     }
 
-    // ---- reopenTicket ----
 
     @Test
     void whenReopenTicket_thenStatusIsOpen() {
@@ -205,7 +200,6 @@ class TicketServiceImplTest {
                 () -> ticketService.reopenTicket(99L));
     }
 
-    // ---- getTicketById ----
 
     @Test
     void whenGetTicketById_asEmployee_thenReturnsOwnTicket() {
