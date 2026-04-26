@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
-import com.femcoders.tico.event.TicketCreatedEvent;
-import com.femcoders.tico.event.TicketEmailEvent;
+import com.femcoders.tico.service.event.TicketCreatedEvent;
+import com.femcoders.tico.service.event.TicketEmailEvent;
 import com.femcoders.tico.utils.EmailTemplateBuilder;
 
 @Slf4j

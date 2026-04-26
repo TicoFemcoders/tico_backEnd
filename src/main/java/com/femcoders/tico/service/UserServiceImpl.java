@@ -23,6 +23,7 @@ import com.femcoders.tico.dto.request.UpdateUserRequest;
 import com.femcoders.tico.dto.response.UserResponse;
 import com.femcoders.tico.entity.Ticket;
 import com.femcoders.tico.entity.User;
+import com.femcoders.tico.enums.TicketStatus;
 import com.femcoders.tico.enums.TokenType;
 import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.ConflictException;
@@ -31,6 +32,7 @@ import com.femcoders.tico.mapper.UserMapper;
 import com.femcoders.tico.repository.TicketRepository;
 import com.femcoders.tico.repository.UserRepository;
 import com.femcoders.tico.security.UserDetail;
+
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final TicketRepository ticketRepository;
     private final AuthService authService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -60,7 +63,8 @@ public class UserServiceImpl implements UserService {
         try {
             emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getName(), code);
         } catch (Exception e) {
-            log.warn("No se pudo enviar el email de activación a {}: {}", maskEmail(savedUser.getEmail()), e.getMessage());
+            log.warn("No se pudo enviar el email de activación a {}: {}", maskEmail(savedUser.getEmail()),
+                    e.getMessage());
         }
 
         return userMapper.toResponseDTO(savedUser);
@@ -69,7 +73,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        Map<Long, Long> openCounts = ticketRepository.countOpenTicketsPerUser()
+        Map<Long, Long> createdCounts = ticketRepository.countOpenTicketsPerUser()
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]));
+
+        Map<Long, Long> assignedCounts = ticketRepository.countOpenTicketsPerAdmin()
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
@@ -78,54 +88,19 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(pageable)
                 .map(user -> {
                     UserResponse base = userMapper.toResponseDTO(user);
-                    long open = openCounts.getOrDefault(user.getId(), 0L);
+                    long open = user.getRoles().contains(UserRole.ADMIN)
+                            ? assignedCounts.getOrDefault(user.getId(), 0L) + createdCounts.getOrDefault(user.getId(), 0L)
+                            : createdCounts.getOrDefault(user.getId(), 0L);
+
                     return new UserResponse(
                             base.id(), base.name(), base.email(),
                             base.roles(), base.isActive(), open, base.createdAt());
                 });
     }
 
-    @Override
-    @Transactional
-    public void deleteUser(Long userId, String reassignEmail) {
-        User currentUser = authService.getAuthenticatedUser();
-
-        if (currentUser.getId().equals(userId)) {
-            throw new BadRequestException("No puedes eliminarte a ti mismo");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
-
-        if (user.getRoles().contains(UserRole.ADMIN)
-                && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
-            throw new ConflictException("No puedes eliminar al único administrador del sistema");
-        }
-
-        List<Ticket> activeTickets = ticketRepository.findByCreatedById(userId)
-                .stream()
-                .filter(t -> t.getStatus() != com.femcoders.tico.enums.TicketStatus.CLOSED)
-                .toList();
-
-        if (!activeTickets.isEmpty()) {
-            if (reassignEmail == null || reassignEmail.isBlank()) {
-                throw new ConflictException(
-                        "El usuario tiene " + activeTickets.size()
-                                + " tickets abiertos. Proporciona un email para reasignarlos.");
-            }
-            User newOwner = userRepository.findByEmail(reassignEmail)
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
-
-            activeTickets.forEach(t -> t.setCreatedBy(newOwner));
-            ticketRepository.saveAll(activeTickets);
-        }
-
-        ticketRepository.unassignOpenTicketsByAdmin(userId);
-        userRepository.delete(user);
-    }
-
     private static String maskEmail(String email) {
-        if (email == null || !email.contains("@")) return "***";
+        if (email == null || !email.contains("@"))
+            return "***";
         int at = email.indexOf('@');
         return email.charAt(0) + "***" + email.substring(at);
     }
@@ -139,7 +114,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAllAdmins(Pageable pageable) {
-        return userRepository.findByRolesContaining(UserRole.ADMIN, pageable)
+        return userRepository.findByRolesContainingAndIsActiveTrue(UserRole.ADMIN, pageable)
                 .map(userMapper::toResponseDTO);
     }
 
@@ -172,7 +147,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse toggleUserActive(Long id) {
+    @Transactional
+    public UserResponse toggleUserActive(Long id, String reassignEmail) {
         User currentUser = authService.getAuthenticatedUser();
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
@@ -187,6 +163,49 @@ public class UserServiceImpl implements UserService {
                 && isCurrentlyActive
                 && userRepository.countByRolesContaining(UserRole.ADMIN) <= 1) {
             throw new ConflictException("No puedes desactivar al único administrador activo del sistema");
+        }
+
+        if (isCurrentlyActive) {
+            if (user.getRoles().contains(UserRole.ADMIN)) {
+                List<Ticket> assignedTickets = ticketRepository.findByAssignedToIdAndStatusNot(id, TicketStatus.CLOSED);
+                List<Ticket> createdTickets = ticketRepository.findByCreatedByIdAndStatusNot(id, TicketStatus.CLOSED);
+
+                if (!assignedTickets.isEmpty() || !createdTickets.isEmpty()) {
+                    if (reassignEmail == null || reassignEmail.isBlank()) {
+                        throw new ConflictException(
+                                "El administrador tiene tickets activos. Proporciona un email para reasignarlos.");
+                    }
+                    User newOwner = userRepository.findByEmail(reassignEmail)
+                            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+                    if (!Boolean.TRUE.equals(newOwner.getIsActive()) || !newOwner.getRoles().contains(UserRole.ADMIN)) {
+                        throw new BadRequestException("El usuario destino debe ser un administrador activo.");
+                    }
+                    assignedTickets.forEach(t -> {
+                        t.setAssignedTo(newOwner);
+                        notificationService.create(t.getId(), currentUser, newOwner.getId(),
+                                "Se te ha asignado el ticket: " + t.getEmailSubject());
+                    });
+                    createdTickets.forEach(t -> {
+                        t.setCreatedBy(newOwner);
+                        notificationService.create(t.getId(), currentUser, newOwner.getId(),
+                                "Se te ha transferido el ticket: " + t.getEmailSubject());
+                    });
+                }
+            } else {
+                if (reassignEmail != null && !reassignEmail.isBlank()) {
+                    User newOwner = userRepository.findByEmail(reassignEmail)
+                            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", reassignEmail));
+                    if (!Boolean.TRUE.equals(newOwner.getIsActive()) || !newOwner.getRoles().contains(UserRole.EMPLOYEE)) {
+                        throw new BadRequestException("El usuario destino debe ser un empleado activo.");
+                    }
+                    List<Ticket> createdTickets = ticketRepository.findByCreatedByIdAndStatusNot(id, TicketStatus.CLOSED);
+                    createdTickets.forEach(t -> {
+                        t.setCreatedBy(newOwner);
+                        notificationService.create(t.getId(), currentUser, newOwner.getId(),
+                                "Se te ha transferido el ticket: " + t.getEmailSubject());
+                    });
+                }
+            }
         }
 
         user.setIsActive(!isCurrentlyActive);
