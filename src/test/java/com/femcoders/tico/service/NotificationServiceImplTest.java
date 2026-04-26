@@ -6,6 +6,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -114,4 +115,18 @@ class NotificationServiceImplTest {
 
         verify(ticketMessageRepository, times(1)).markAllAsReadByRecipient(1L);
     }
+
+    @Test
+void getAll_ShouldReturnEmptyList_WhenNoNotifications() {
+
+    when(authService.getAuthenticatedUser()).thenReturn(mockUser);
+    when(ticketMessageRepository.findByRecipientIdOrderByCreatedAtDesc(1L))
+            .thenReturn(List.of());
+
+
+    List<NotificationResponse> result = notificationService.getAll();
+
+
+    assertTrue(result.isEmpty());
+}
 }
