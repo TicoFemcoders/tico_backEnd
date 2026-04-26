@@ -22,4 +22,6 @@ public interface LabelRepository extends JpaRepository<Label, Long> {
 
     boolean existsByTicketsId(Long id);
 
+    List<Label> findByIsActiveTrue();
+
 }

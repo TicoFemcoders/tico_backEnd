@@ -7,17 +7,18 @@ import com.femcoders.tico.enums.TicketPriority;
 import com.femcoders.tico.enums.TicketStatus;
 
 public record TicketResponse(
-    Long id,
-    String title,
-    String description,
-    TicketStatus status,
-    TicketPriority priority,
-    String createdByName,
-    String assignedToName,
-    Set<LabelSummary> labels,
-    String emailSubject,
-    String closingMessage,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    LocalDateTime closedAt) {
+        Long id,
+        String title,
+        String description,
+        TicketStatus status,
+        TicketPriority priority,
+        String createdByName,
+        Long assignedToId,
+        String assignedToName,
+        Set<LabelSummary> labels,
+        String emailSubject,
+        String closingMessage,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        LocalDateTime closedAt) {
 }

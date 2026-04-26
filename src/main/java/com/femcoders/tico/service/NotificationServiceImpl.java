@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import com.femcoders.tico.dto.response.NotificationResponse;
-import com.femcoders.tico.dto.NotificationSummary;
+import com.femcoders.tico.dto.response.NotificationSummaryResponse;
 import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.exception.ResourceNotFoundException;
@@ -51,7 +51,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   @Override
-  public NotificationSummary getPaginatedSummary(int page, int size) {
+  public NotificationSummaryResponse getPaginatedSummary(int page, int size) {
     Long userId = authService.getAuthenticatedUser().getId();
     long unreadCount = ticketMessageRepository.countByRecipientIdAndIsReadFalse(userId);
     Pageable pageable = PageRequest.of(page, size);
@@ -61,7 +61,7 @@ public class NotificationServiceImpl implements NotificationService {
         .stream()
         .map(this::toDTO)
         .toList();
-    return new NotificationSummary(unreadCount, recentNotifications);
+    return new NotificationSummaryResponse(unreadCount, recentNotifications);
   }
 
   @Override
