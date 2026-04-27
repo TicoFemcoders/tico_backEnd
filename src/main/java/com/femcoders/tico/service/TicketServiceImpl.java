@@ -108,6 +108,9 @@ public class TicketServiceImpl implements TicketService {
                                 : "Se te ha asignado un nuevo ticket: " + ticket.getEmailSubject();
 
                 ticket.setAssignedTo(admin);
+                if (ticket.getStatus() == TicketStatus.OPEN) {
+                        ticket.setStatus(TicketStatus.IN_PROGRESS);
+                }
                 Ticket saved = ticketsRepository.save(ticket);
 
                 if (!currentUser.getId().equals(admin.getId())) {
@@ -309,7 +312,7 @@ public class TicketServiceImpl implements TicketService {
 
                 boolean creatorIsAdmin = ticket.getCreatedBy().getRoles().contains(UserRole.ADMIN);
 
-                ticket.setStatus(TicketStatus.OPEN);
+                ticket.setStatus(TicketStatus.IN_PROGRESS);
                 ticket.setClosedAt(null);
                 ticket.getLabels().removeIf(label -> !Boolean.TRUE.equals(label.getIsActive()));
                 Ticket saved = ticketsRepository.save(ticket);
