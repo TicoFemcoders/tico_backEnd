@@ -89,11 +89,6 @@ public class TicketMessageServiceImpl implements TicketMessageService {
         return ticketMessageMapper.toResponseDTO(saved);
     }
 
-    @Override
-    public void deleteMessage(Long id) {
-        ticketMessageRepository.deleteById(id);
-    }
-
     private Ticket loadTicketForAuthorizedUser(Long ticketId, User currentUser) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));

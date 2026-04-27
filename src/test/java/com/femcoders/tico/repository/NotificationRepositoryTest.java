@@ -4,34 +4,51 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.femcoders.tico.entity.TicketMessage;
+import com.femcoders.tico.entity.User;
 
-@ExtendWith(MockitoExtension.class)
+@DataJpaTest
 class NotificationRepositoryTest {
 
-    @Mock
+    @Autowired
     private TicketMessageRepository ticketMessageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private User mockUser;
+
+    @BeforeEach
+    void setUp() {
+        mockUser = new User();
+        mockUser.setName("Ana Garcia");
+        mockUser.setEmail("ana@cohispania.com");
+        mockUser.setPasswordHash("password");
+        userRepository.save(mockUser);
+    }
+
+    private TicketMessage createNotification(boolean isRead) {
+        TicketMessage notification = new TicketMessage();
+        notification.setTicketId(10L);
+        notification.setContent("Mensaje de prueba");
+        notification.setIsRead(isRead);
+        notification.setRecipientId(mockUser.getId());
+        notification.setAuthor(mockUser);
+        return ticketMessageRepository.save(notification);
+    }
 
     @Test
     void findByRecipientIdAndIsReadFalse_ShouldReturnUnreadNotifications() {
+        createNotification(false);
+        createNotification(true);
 
-        TicketMessage notification = new TicketMessage();
-        notification.setId(1L);
-        notification.setRecipientId(1L);
-        notification.setIsRead(false);
-        notification.setContent("Mensaje de prueba");
-
-        when(ticketMessageRepository.findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(1L))
-                .thenReturn(List.of(notification));
-
-        List<TicketMessage> result
-                = ticketMessageRepository.findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(1L);
+        List<TicketMessage> result =
+            ticketMessageRepository.findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(mockUser.getId());
 
         assertEquals(1, result.size());
         assertFalse(result.get(0).getIsRead());
@@ -39,40 +56,38 @@ class NotificationRepositoryTest {
 
     @Test
     void countByRecipientIdAndIsReadFalse_ShouldReturnCount() {
+        createNotification(false);
+        createNotification(false);
+        createNotification(true);
 
-        when(ticketMessageRepository.countByRecipientIdAndIsReadFalse(1L)).thenReturn(3L);
+        long count = ticketMessageRepository.countByRecipientIdAndIsReadFalse(mockUser.getId());
 
-        long count = ticketMessageRepository.countByRecipientIdAndIsReadFalse(1L);
-
-        assertEquals(3L, count);
+        assertEquals(2L, count);
     }
 
     @Test
-    void markAllAsReadByRecipient_ShouldReturnUpdatedCount() {
+    void markAllAsReadByRecipient_ShouldMarkAllAsRead() {
+        createNotification(false);
+        createNotification(false);
 
-        when(ticketMessageRepository.markAllAsReadByRecipient(1L)).thenReturn(3);
+        int updated = ticketMessageRepository.markAllAsReadByRecipient(mockUser.getId());
 
-        int updated = ticketMessageRepository.markAllAsReadByRecipient(1L);
-
-        assertEquals(3, updated);
+        assertEquals(2, updated);
     }
 
     @Test
-    void markAsReadByIdAndRecipient_ShouldReturnOne_WhenExists() {
+    void markAsReadByIdAndRecipient_ShouldMarkOneAsRead() {
+        TicketMessage notification = createNotification(false);
 
-        when(ticketMessageRepository.markAsReadByIdAndRecipient(1L, 1L)).thenReturn(1);
-
-        int updated = ticketMessageRepository.markAsReadByIdAndRecipient(1L, 1L);
+        int updated = ticketMessageRepository.markAsReadByIdAndRecipient(
+            notification.getId(), mockUser.getId());
 
         assertEquals(1, updated);
     }
 
     @Test
     void markAsReadByIdAndRecipient_ShouldReturnZero_WhenNotExists() {
-
-        when(ticketMessageRepository.markAsReadByIdAndRecipient(99L, 1L)).thenReturn(0);
-
-        int updated = ticketMessageRepository.markAsReadByIdAndRecipient(99L, 1L);
+        int updated = ticketMessageRepository.markAsReadByIdAndRecipient(99L, mockUser.getId());
 
         assertEquals(0, updated);
     }
