@@ -12,16 +12,16 @@ import com.femcoders.tico.entity.Label;
 @Repository
 public interface LabelRepository extends JpaRepository<Label, Long> {
 
-    List<Label> findByNameContainingIgnoreCase(String name);
+    public List<Label> findByNameContainingIgnoreCase(String name);
 
-    Page<Label> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    public Page<Label> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    boolean existsByName(String name);
+    public boolean existsByName(String name);
 
-    boolean existsByNameIgnoreCase(String name);
+    public boolean existsByNameIgnoreCase(String name);
 
-    boolean existsByTicketsId(Long id);
+    public boolean existsByTicketsId(Long id);
 
-    List<Label> findByIsActiveTrue();
+    public List<Label> findByIsActiveTrue();
 
 }

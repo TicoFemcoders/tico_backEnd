@@ -14,26 +14,26 @@ import com.femcoders.tico.entity.TicketMessage;
 
 public interface TicketMessageRepository extends JpaRepository<TicketMessage, Long> {
 
-    Page<TicketMessage> findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(Long ticketId, Pageable pageable);
+    public Page<TicketMessage> findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(Long ticketId, Pageable pageable);
 
-    List<TicketMessage> findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(Long recipientId);
+    public List<TicketMessage> findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(Long recipientId);
 
-    List<TicketMessage> findByRecipientIdOrderByCreatedAtDesc(Long recipientId);
+    public List<TicketMessage> findByRecipientIdOrderByCreatedAtDesc(Long recipientId);
 
-    long countByRecipientIdAndIsReadFalse(Long recipientId);
+    public long countByRecipientIdAndIsReadFalse(Long recipientId);
 
-    Page<TicketMessage> findByRecipientIdOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
+    public Page<TicketMessage> findByRecipientIdOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
 
-    Page<TicketMessage> findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
+    public Page<TicketMessage> findByRecipientIdAndIsReadFalseOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
 
     @Modifying
     @Transactional
     @Query("UPDATE TicketMessage m SET m.isRead = true WHERE m.recipientId = :userId AND m.isRead = false")
-    int markAllAsReadByRecipient(@Param("userId") Long userId);
+    public int markAllAsReadByRecipient(@Param("userId") Long userId);
 
     @Modifying
     @Transactional
     @Query("UPDATE TicketMessage m SET m.isRead = true WHERE m.id = :id AND m.recipientId = :userId AND m.isRead = false")
-    int markAsReadByIdAndRecipient(@Param("id") Long id, @Param("userId") Long userId);
+    public int markAsReadByIdAndRecipient(@Param("id") Long id, @Param("userId") Long userId);
 
 }

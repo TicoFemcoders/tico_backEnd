@@ -177,7 +177,7 @@ public class EmailService {
             helper.addInline("logo", new ClassPathResource("images/logoTico.png"));
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Error al enviar email a " + toEmail, e);
+            throw new RuntimeException("Error al enviar email (destinatario enmascarado en logs)", e);
         }
     }
 }
