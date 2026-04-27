@@ -8,10 +8,8 @@ import com.femcoders.tico.dto.response.TicketMessageResponse;
 
 public interface TicketMessageService {
 
-    Page<TicketMessageResponse> getMessagesByTicketId(Long ticketId, Pageable pageable);
+    public Page<TicketMessageResponse> getMessagesByTicketId(Long ticketId, Pageable pageable);
 
-    TicketMessageResponse createMessage(Long ticketId, TicketMessageRequest dto);
-
-    void deleteMessage(Long id);
+    public TicketMessageResponse createMessage(Long ticketId, TicketMessageRequest dto);
 
 }

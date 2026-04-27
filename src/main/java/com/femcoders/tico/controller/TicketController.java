@@ -2,6 +2,7 @@ package com.femcoders.tico.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,19 +45,19 @@ public class TicketController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<TicketResponse>> getAllTickets(
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(ticketsService.getAllTickets(pageable));
     }
 
     @GetMapping("/my-tickets")
     public ResponseEntity<Page<TicketResponse>> getMyTickets(
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(ticketsService.getTicketsByUser(pageable));
     }
 
     @GetMapping("/assigned")
     public ResponseEntity<Page<TicketResponse>> getAssignedTickets(
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(ticketsService.getTicketsByAdmin(pageable));
     }
 
