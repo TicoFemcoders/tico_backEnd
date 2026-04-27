@@ -66,4 +66,14 @@ class NotificationRepositoryTest {
 
         assertEquals(1, updated);
     }
+
+    @Test
+    void markAsReadByIdAndRecipient_ShouldReturnZero_WhenNotExists() {
+
+        when(ticketMessageRepository.markAsReadByIdAndRecipient(99L, 1L)).thenReturn(0);
+
+        int updated = ticketMessageRepository.markAsReadByIdAndRecipient(99L, 1L);
+
+        assertEquals(0, updated);
+    }
 }
