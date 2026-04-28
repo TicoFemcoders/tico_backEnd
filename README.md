@@ -190,6 +190,65 @@ src/main/java/com/femcoders/tico/
 
 > La arquitectura sigue el patrón **Controller → Service → Repository** con interfaces para desacoplar la lógica de negocio de la implementación.
 
+---
+
+```
+src/test/java/com/femcoders/tico/
+│
+├── TicoApplicationTests.java              → Smoke test (el contexto de Spring arranca correctamente)
+│
+├── controller/                            → Tests unitarios de controladores (MockMvc en modo slice)
+│   ├── ActivationControllerTest.java
+│   ├── LabelControllerTest.java
+│   ├── NotificationControllerTest.java
+│   ├── TicketControllerTest.java
+│   └── UserControllerTest.java
+│
+├── entity/                                → Tests unitarios de entidades
+│   ├── ActivationTokenTest.java
+│   └── TicketTest.java
+│
+├── integration/                           → Tests de integración (contexto completo Spring Boot + H2)
+│   ├── ActivationFlowIT.java              → Activación de cuenta y reseteo de contraseña
+│   ├── LabelCreationFlowIT.java           → Creación de etiquetas con control de acceso por rol
+│   ├── LoginFlowIT.java                   → Login y emisión de JWT
+│   ├── TicketCreationFlowIT.java          → Creación de tickets, validaciones y generación de emailSubject
+│   ├── TicketLifecycleFlowIT.java         → Ciclo de vida completo: crear → asignar → cerrar → reabrir
+│   ├── TicketMessageFlowIT.java           → Mensajería interna con control de acceso entre roles
+│   └── UserCreationFlowIT.java            → Alta de usuarios y restricciones por rol
+│
+├── mapper/                                → Tests unitarios de mappers MapStruct
+│   ├── LabelMapperTest.java
+│   └── TicketMapperTest.java
+│
+├── repository/                            → Tests de repositorio (Spring Data JPA + H2)
+│   ├── ActivationTokenRepositoryTest.java
+│   ├── LabelRepositoryTest.java
+│   ├── NotificationRepositoryTest.java
+│   ├── TicketRepositoryTest.java
+│   └── UserRepositoryTest.java
+│
+├── scheduler/                             → Test del scheduler de limpieza de tokens caducados
+│   └── TokenCleanupSchedulerTest.java
+│
+├── security/                              → Tests del servicio JWT y los filtros de seguridad
+│   ├── JwtTokenServiceTest.java
+│   └── filter/
+│       ├── JWTAuthenticationFilterTest.java
+│       └── JWTAuthorizationFilterTest.java
+│
+└── service/                               → Tests unitarios de servicios con Mockito
+    ├── ActivationServiceImplTest.java
+    ├── AuthServiceImplTest.java
+    ├── EmailServiceTest.java
+    ├── LabelServiceImplTest.java
+    ├── NotificationServiceImplTest.java
+    ├── RateLimiterServiceTest.java
+    ├── TicketMessageServiceImplTest.java
+    ├── TicketServiceImplTest.java
+    └── UserServiceImplTest.java
+```
+
 </details>
 
 ---
@@ -248,6 +307,34 @@ La documentación Swagger estará en `http://localhost:8080/swagger-ui.html`.
 ```bash
 ./mvnw test
 ```
+
+---
+
+## 🧪 Tests
+
+El proyecto cuenta con **35 clases de test** organizadas en cinco niveles:
+
+| Nivel            | Herramientas                               | Qué prueban                                                    |
+| ---------------- | ------------------------------------------ | -------------------------------------------------------------- |
+| Unitarios        | JUnit 5 + Mockito                          | Servicios, mappers, entidades, filtros JWT y scheduler         |
+| Slice (web)      | `@WebMvcTest` + MockMvc                    | Controladores en aislamiento, sin contexto completo            |
+| Repositorio      | `@DataJpaTest` + H2                        | Consultas Spring Data JPA contra base de datos en memoria      |
+| Integración      | `@SpringBootTest` + MockMvc + H2           | Flujos end-to-end HTTP → servicio → repositorio → BD           |
+| Smoke test       | `@SpringBootTest`                          | Verifica que el contexto completo de Spring arranca sin errores |
+
+### Tests de integración
+
+Los tests de integración (`*IT.java`) levantan el **contexto completo de Spring Boot** usando H2 como base de datos en memoria. Cada test está anotado con `@Transactional`, por lo que los cambios en BD se revierten automáticamente al terminar. El `EmailService` se sustituye por un mock (`@MockitoBean`) para evitar envíos reales de email. MockMvc ejecuta peticiones HTTP completas atravesando seguridad, controladores, servicios, repositorios y base de datos.
+
+| Clase                      | Qué verifica                                                                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LoginFlowIT`              | Login correcto devuelve 200 con JWT en cabecera `Authorization`; contraseña incorrecta, usuario inactivo o email inexistente devuelven 401                            |
+| `UserCreationFlowIT`       | ADMIN crea usuario (queda inactivo y se genera token de activación en BD); EMPLOYEE recibe 403; sin autenticación recibe 401; email inválido, nombre vacío o roles vacíos devuelven 400 |
+| `ActivationFlowIT`         | Token válido activa el usuario y persiste la nueva contraseña con BCrypt; token expirado devuelve 400 sin activar; reenvío de código genera un nuevo token distinto; reseteo de contraseña actualiza el hash en BD |
+| `TicketCreationFlowIT`     | Ticket creado correctamente devuelve 201, se persiste en BD y el campo `emailSubject` comienza por `[TICO-`; sin autenticación → 401; título vacío o demasiado corto → 400 |
+| `TicketLifecycleFlowIT`    | Ciclo completo: EMPLOYEE crea (OPEN) → ADMIN asigna (pasa automáticamente a IN_PROGRESS) → ADMIN cierra con mensaje (CLOSED, `closedAt` registrado) → EMPLOYEE reabre (vuelve a IN_PROGRESS); EMPLOYEE no puede asignar ni cerrar (403) |
+| `TicketMessageFlowIT`      | Admin asignado y empleado propietario pueden intercambiar mensajes y ambos quedan persistidos; otro empleado recibe 403; admin no asignado al ticket recibe 400; sin autenticación → 401 |
+| `LabelCreationFlowIT`      | ADMIN crea etiqueta y se persiste activa con el color correcto; EMPLOYEE recibe 403; sin autenticación → 401; formato de color inválido → 400; nombre duplicado → 500 |
 
 ---
 
@@ -417,7 +504,7 @@ La documentación Swagger estará en `http://localhost:8080/swagger-ui.html`.
 | Developer     | Sukaina Hadani          | [@sukisu91-alt](https://github.com/sukisu91-alt)         | [LinkedIn](https://www.linkedin.com/in/sukaina-hadani-97161b394) |
 | Developer     | Marie-Charlotte Doulcet | [@Charlottedoulcet](https://github.com/Charlottedoulcet) | [LinkedIn](https://www.linkedin.com/in/marie-charlottedoulcet/)  |
 
-> 💙 Proyecto desarrollado durante el **FemCoders Bootcamp — 7 al 20 de abril de 2026**
+> 💙 Proyecto desarrollado durante el **FemCoders Bootcamp — 7 al 29 de abril de 2026**
 
 ---
 
