@@ -75,7 +75,6 @@ class TicketMessageFlowIT {
     void assignedAdmin_canSendMessage_andEmployeeCanSendReply() throws Exception {
         Long ticketId = createTicketAndAssignAdmin();
 
-        // Admin replies to the ticket
         TicketMessageRequest adminMsg = new TicketMessageRequest(ticketId, "Estamos investigando el problema.", null);
 
         mockMvc.perform(post("/api/tickets/{id}/messages", ticketId)
@@ -86,7 +85,6 @@ class TicketMessageFlowIT {
                 .andExpect(jsonPath("$.content").value("Estamos investigando el problema."))
                 .andExpect(jsonPath("$.authorName").value("Test User"));
 
-        // Employee replies back
         TicketMessageRequest employeeMsg = new TicketMessageRequest(ticketId, "Gracias, quedo a la espera.", null);
 
         mockMvc.perform(post("/api/tickets/{id}/messages", ticketId)
@@ -150,7 +148,6 @@ class TicketMessageFlowIT {
                 .andExpect(status().isUnauthorized());
     }
 
-    // Creates a ticket as employee and assigns it to admin via the API
     private Long createTicketAndAssignAdmin() throws Exception {
         TicketCreateRequest createDto = new TicketCreateRequest(
                 "Problema con la VPN corporativa",
