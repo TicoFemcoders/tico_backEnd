@@ -2,6 +2,7 @@ package com.femcoders.tico.security;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -24,6 +25,10 @@ public class CustomAuthenticationManager implements AuthenticationManager {
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     UserDetail userDetail =(UserDetail) userService.loadUserByUsername(authentication.getName());
+
+    if (!userDetail.isEnabled()) {
+      throw new DisabledException("La cuenta no está activa. Contacta con un administrador.");
+    }
 
     if (!passwordEncoder.matches(authentication.getCredentials().toString(), userDetail.getPassword())) {
       throw new BadCredentialsException("La contraseña es incorrecta");
