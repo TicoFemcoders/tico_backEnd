@@ -12,11 +12,13 @@ import com.femcoders.tico.enums.UserRole;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByEmail(String email);
+    public Optional<User> findByEmail(String email);
 
-    List<User> findByRolesContaining(UserRole role);
+    public List<User> findByRolesContaining(UserRole role);
 
-    Page<User> findByRolesContaining(UserRole role, Pageable pageable);
+    public Page<User> findByRolesContaining(UserRole role, Pageable pageable);
 
-    long countByRolesContaining(UserRole role);
+    public Page<User> findByRolesContainingAndIsActiveTrue(UserRole role, Pageable pageable);
+
+    public long countByRolesContaining(UserRole role);
 }

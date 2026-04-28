@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.femcoders.tico.dto.response.NotificationResponse;
-import com.femcoders.tico.dto.NotificationSummary;
+import com.femcoders.tico.dto.response.NotificationSummaryResponse;
 import com.femcoders.tico.service.NotificationService;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -24,7 +24,7 @@ public class NotificationController {
   private final NotificationService notificationService;
 
   @GetMapping
-  public ResponseEntity<NotificationSummary> getPaginatedNotifications(
+  public ResponseEntity<NotificationSummaryResponse> getPaginatedNotifications(
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     return ResponseEntity.ok(notificationService.getPaginatedSummary(page, size));

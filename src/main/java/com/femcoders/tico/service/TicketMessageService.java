@@ -1,16 +1,15 @@
 package com.femcoders.tico.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.femcoders.tico.dto.request.TicketMessageRequest;
 import com.femcoders.tico.dto.response.TicketMessageResponse;
 
 public interface TicketMessageService {
 
-    List<TicketMessageResponse> getMessagesByTicketId(Long ticketId);
+    public Page<TicketMessageResponse> getMessagesByTicketId(Long ticketId, Pageable pageable);
 
-    TicketMessageResponse createMessage(Long ticketId, TicketMessageRequest dto);
-
-    void deleteMessage(Long id);
+    public TicketMessageResponse createMessage(Long ticketId, TicketMessageRequest dto);
 
 }

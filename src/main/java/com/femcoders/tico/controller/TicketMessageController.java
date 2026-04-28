@@ -1,7 +1,9 @@
 package com.femcoders.tico.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,9 +30,10 @@ public class TicketMessageController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TicketMessageResponse>> getMessages(@PathVariable Long ticketId) {
-        List<TicketMessageResponse> messages = ticketMessageService.getMessagesByTicketId(ticketId);
-        return ResponseEntity.ok(messages);
+    public ResponseEntity<Page<TicketMessageResponse>> getMessages(
+            @PathVariable Long ticketId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(ticketMessageService.getMessagesByTicketId(ticketId, pageable));
     }
 
     @PostMapping
@@ -40,5 +43,7 @@ public class TicketMessageController {
         TicketMessageResponse saved = ticketMessageService.createMessage(ticketId, message);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
+
+    
 
 }

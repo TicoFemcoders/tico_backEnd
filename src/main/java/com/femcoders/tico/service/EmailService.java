@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
-import com.femcoders.tico.event.TicketCreatedEvent;
-import com.femcoders.tico.event.TicketEmailEvent;
+import com.femcoders.tico.service.event.TicketCreatedEvent;
+import com.femcoders.tico.service.event.TicketEmailEvent;
 import com.femcoders.tico.utils.EmailTemplateBuilder;
 
 @Slf4j
@@ -177,7 +177,7 @@ public class EmailService {
             helper.addInline("logo", new ClassPathResource("images/logoTico.png"));
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Error al enviar email a " + toEmail, e);
+            throw new RuntimeException("Error al enviar email (destinatario enmascarado en logs)", e);
         }
     }
 }
