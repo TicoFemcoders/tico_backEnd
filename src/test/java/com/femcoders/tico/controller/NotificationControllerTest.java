@@ -34,12 +34,23 @@ class NotificationControllerTest {
         when(notificationService.getPaginatedSummary(0, 20)).thenReturn(summary);
 
         ResponseEntity<NotificationSummaryResponse> response = notificationController.getPaginatedNotifications(0, 20);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(3L, response.getBody().totalUnread());
     }
+<<<<<<< HEAD
     
+=======
+
+    @Test
+>>>>>>> feature/test
     void getUnread_ShouldReturnUnreadList() {
+
         NotificationResponse dto = new NotificationResponse(1L, 10L, "Mensaje", false, null);
         when(notificationService.getUnread()).thenReturn(List.of(dto));
+
         ResponseEntity<List<NotificationResponse>> response = notificationController.getUnread();
+
         assertEquals(200, response.getStatusCode().value());
         assertEquals(1, response.getBody().size());
     }
