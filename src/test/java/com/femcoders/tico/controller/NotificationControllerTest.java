@@ -38,8 +38,12 @@ class NotificationControllerTest {
         assertEquals(200, response.getStatusCode().value());
         assertEquals(3L, response.getBody().totalUnread());
     }
+<<<<<<< HEAD
+    
+=======
 
     @Test
+>>>>>>> feature/test
     void getUnread_ShouldReturnUnreadList() {
 
         NotificationResponse dto = new NotificationResponse(1L, 10L, "Mensaje", false, null);
