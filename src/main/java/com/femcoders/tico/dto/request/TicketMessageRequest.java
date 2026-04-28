@@ -5,9 +5,11 @@ import jakarta.validation.constraints.NotNull;
 
 public record TicketMessageRequest(
 
-        @NotNull Long ticketId,
+        @NotNull
+        Long ticketId,
 
-        @NotBlank String content,
+        @NotBlank
+        String content,
 
         Long recipientId
 

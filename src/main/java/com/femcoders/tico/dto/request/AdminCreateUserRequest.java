@@ -10,11 +10,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record AdminCreateUserRequest(
-        @NotBlank(message = "Se requiere el nombre") @Size(min = 2, max = 30) String name,
+        @NotBlank(message = "Se requiere el nombre") @Size(min = 2, max = 30)
+        String name,
 
-        @NotBlank(message = "Se requiere correo electrónico") @Email(message = "Formato de correo electrónico no válido") String email,
+        @NotBlank(message = "Se requiere correo electrónico") @Email(message = "Formato de correo electrónico no válido")
+        String email,
 
-        @NotNull @Size(min = 1, message = "Se requiere al menos un rol") Set<UserRole> roles
+        @NotNull @Size(min = 1, message = "Se requiere al menos un rol")
+        Set<UserRole> roles
 
 ) {
 

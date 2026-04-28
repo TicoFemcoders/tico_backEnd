@@ -62,8 +62,6 @@ class AuthServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-    // ── getAuthenticatedUser ───────────────────────────────────────────────
-
     @Test
     void getAuthenticatedUser_debeRetornarUsuario_cuandoEstaAutenticado() {
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -93,8 +91,6 @@ class AuthServiceImplTest {
 
         assertThrows(ResourceNotFoundException.class, () -> authService.getAuthenticatedUser());
     }
-
-    // ── requestReset ──────────────────────────────────────────────────────
 
     @Test
     void requestReset_debeEnviarEmail_cuandoDatosCorrectos() {
@@ -133,7 +129,6 @@ class AuthServiceImplTest {
         assertThrows(BadRequestException.class, () -> authService.requestReset("ana@test.com"));
     }
 
-    // ── confirmReset ──────────────────────────────────────────────────────
 
     @Test
     void confirmReset_debeCambiarContrasena_cuandoDatosCorrectos() {
