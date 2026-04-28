@@ -71,7 +71,7 @@ class TicketLifecycleFlowIT {
 
     @Test
     void fullLifecycle_createAssignCloseReopen() throws Exception {
-        // 1. Employee creates ticket → OPEN
+        
         TicketCreateRequest createDto = new TicketCreateRequest(
                 "El correo corporativo no funciona",
                 "Desde esta mañana no puedo acceder al correo de empresa.",
@@ -95,7 +95,7 @@ class TicketLifecycleFlowIT {
         assertEquals(TicketStatus.OPEN, ticket.getStatus());
         assertNull(ticket.getAssignedTo());
 
-        // 2. Admin assigns themselves → status changes automatically to IN_PROGRESS
+        
         AssignAdminRequest assignDto = new AssignAdminRequest(admin.getId());
 
         mockMvc.perform(patch("/api/tickets/{id}/assign-admin", ticketId)
@@ -111,7 +111,6 @@ class TicketLifecycleFlowIT {
         assertEquals(admin.getId(), ticket.getAssignedTo().getId());
         assertEquals(TicketStatus.IN_PROGRESS, ticket.getStatus());
 
-        // 3. Admin closes ticket with a message
         CloseTicketRequest closeDto = new CloseTicketRequest("Problema resuelto: cuenta restablecida.");
 
         mockMvc.perform(patch("/api/tickets/{id}/close", ticketId)
@@ -127,7 +126,7 @@ class TicketLifecycleFlowIT {
         assertNotNull(ticket.getClosedAt());
         assertEquals("Problema resuelto: cuenta restablecida.", ticket.getClosingMessage());
 
-        // 4. Employee reopens the ticket → back to IN_PROGRESS
+      
         mockMvc.perform(patch("/api/tickets/{id}/reopen", ticketId)
                 .header("Authorization", "Bearer " + employeeToken))
                 .andExpect(status().isOk())

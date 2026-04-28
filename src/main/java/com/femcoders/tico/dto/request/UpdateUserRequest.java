@@ -10,10 +10,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record UpdateUserRequest(
-        @NotBlank(message = "Se requiere el nombre") @Size(min = 2, max = 30) String name,
+        @NotBlank(message = "Se requiere el nombre") @Size(min = 2, max = 30)
+        String name,
 
-        @NotBlank(message = "Se requiere correo electrónico") @Email(message = "Formato de correo electrónico no válido") String email,
+        @NotBlank(message = "Se requiere correo electrónico") @Email(message = "Formato de correo electrónico no válido")
+        String email,
 
-        @NotNull(message = "Se requiere al menos un rol") Set<UserRole> roles) {
+        @NotNull(message = "Se requiere al menos un rol")
+        Set<UserRole> roles) {
 
 }
