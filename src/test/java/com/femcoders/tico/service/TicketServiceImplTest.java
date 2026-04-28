@@ -176,7 +176,7 @@ class TicketServiceImplTest {
     }
 
     @Test
-    void whenReopenTicket_thenStatusIsOpen() {
+    void whenReopenTicket_thenStatusIsInProgress() {
         ticket.setStatus(TicketStatus.CLOSED);
         ticket.setAssignedTo(admin);
         when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
@@ -186,7 +186,7 @@ class TicketServiceImplTest {
 
         ticketService.reopenTicket(1L);
 
-        assertEquals(TicketStatus.OPEN, ticket.getStatus());
+        assertEquals(TicketStatus.IN_PROGRESS, ticket.getStatus());
         assertNull(ticket.getClosedAt());
     }
 
