@@ -417,7 +417,7 @@ La documentación Swagger estará en `http://localhost:8080/swagger-ui.html`.
 | Developer     | Sukaina Hadani          | [@sukisu91-alt](https://github.com/sukisu91-alt)         | [LinkedIn](https://www.linkedin.com/in/sukaina-hadani-97161b394) |
 | Developer     | Marie-Charlotte Doulcet | [@Charlottedoulcet](https://github.com/Charlottedoulcet) | [LinkedIn](https://www.linkedin.com/in/marie-charlottedoulcet/)  |
 
-> 💙 Proyecto desarrollado durante el **FemCoders Bootcamp — 7 al 20 de abril de 2026**
+> 💙 Proyecto desarrollado durante el **FemCoders Bootcamp — 7 al 29 de abril de 2026**
 
 ---
 
