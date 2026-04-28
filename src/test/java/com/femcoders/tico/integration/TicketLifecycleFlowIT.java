@@ -2,7 +2,6 @@ package com.femcoders.tico.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.femcoders.tico.dto.request.AssignAdminRequest;
-import com.femcoders.tico.dto.request.ChangeStatusRequest;
 import com.femcoders.tico.dto.request.CloseTicketRequest;
 import com.femcoders.tico.dto.request.TicketCreateRequest;
 import com.femcoders.tico.entity.Ticket;
@@ -71,7 +70,7 @@ class TicketLifecycleFlowIT {
     }
 
     @Test
-    void fullLifecycle_createAssignProgressCloseReopen() throws Exception {
+    void fullLifecycle_createAssignCloseReopen() throws Exception {
         // 1. Employee creates ticket → OPEN
         TicketCreateRequest createDto = new TicketCreateRequest(
                 "El correo corporativo no funciona",
@@ -96,7 +95,7 @@ class TicketLifecycleFlowIT {
         assertEquals(TicketStatus.OPEN, ticket.getStatus());
         assertNull(ticket.getAssignedTo());
 
-        // 2. Admin assigns themselves
+        // 2. Admin assigns themselves → status changes automatically to IN_PROGRESS
         AssignAdminRequest assignDto = new AssignAdminRequest(admin.getId());
 
         mockMvc.perform(patch("/api/tickets/{id}/assign-admin", ticketId)
@@ -104,27 +103,15 @@ class TicketLifecycleFlowIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(assignDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.assignedToName").value("Test User"));
-
-        ticketRepository.flush();
-        ticket = ticketRepository.findById(ticketId).orElseThrow();
-        assertEquals(admin.getId(), ticket.getAssignedTo().getId());
-
-        // 3. Admin changes status to IN_PROGRESS
-        ChangeStatusRequest statusDto = new ChangeStatusRequest(TicketStatus.IN_PROGRESS);
-
-        mockMvc.perform(patch("/api/tickets/{id}/status", ticketId)
-                .header("Authorization", "Bearer " + adminToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(statusDto)))
-                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignedToName").value("Test User"))
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
 
         ticketRepository.flush();
         ticket = ticketRepository.findById(ticketId).orElseThrow();
+        assertEquals(admin.getId(), ticket.getAssignedTo().getId());
         assertEquals(TicketStatus.IN_PROGRESS, ticket.getStatus());
 
-        // 4. Admin closes ticket with a message
+        // 3. Admin closes ticket with a message
         CloseTicketRequest closeDto = new CloseTicketRequest("Problema resuelto: cuenta restablecida.");
 
         mockMvc.perform(patch("/api/tickets/{id}/close", ticketId)
@@ -140,15 +127,15 @@ class TicketLifecycleFlowIT {
         assertNotNull(ticket.getClosedAt());
         assertEquals("Problema resuelto: cuenta restablecida.", ticket.getClosingMessage());
 
-        // 5. Employee reopens the ticket
+        // 4. Employee reopens the ticket → back to IN_PROGRESS
         mockMvc.perform(patch("/api/tickets/{id}/reopen", ticketId)
                 .header("Authorization", "Bearer " + employeeToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("OPEN"));
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
 
         ticketRepository.flush();
         ticket = ticketRepository.findById(ticketId).orElseThrow();
-        assertEquals(TicketStatus.OPEN, ticket.getStatus());
+        assertEquals(TicketStatus.IN_PROGRESS, ticket.getStatus());
         assertNull(ticket.getClosedAt());
     }
 
