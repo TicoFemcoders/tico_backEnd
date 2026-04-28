@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -102,6 +103,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleMethodNotSupported(
             HttpRequestMethodNotSupportedException ex) {
         return responseBuilder.build(HttpStatus.METHOD_NOT_ALLOWED, "Operación no permitida", null);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        return responseBuilder.build(HttpStatus.FORBIDDEN, "No tienes permiso para realizar esta acción", null);
     }
 
     @ExceptionHandler(Exception.class)
