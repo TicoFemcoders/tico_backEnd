@@ -26,7 +26,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 
 import com.femcoders.tico.dto.request.TicketMessageRequest;
 import com.femcoders.tico.dto.response.TicketMessageResponse;
@@ -35,6 +34,7 @@ import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.BadRequestException;
+import com.femcoders.tico.exception.ForbiddenActionException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMessageMapper;
 import com.femcoders.tico.repository.TicketMessageRepository;
@@ -157,12 +157,12 @@ class TicketMessageServiceImplTest {
         }
 
         @Test
-        void employeeNotTicketOwner_throwsAccessDeniedException() {
+        void employeeNotTicketOwner_throwsForbiddenActionException() {
             when(authService.getAuthenticatedUser()).thenReturn(otherEmployee);
             when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
 
             assertThatThrownBy(() -> service.getMessagesByTicketId(10L, pageable))
-                    .isInstanceOf(AccessDeniedException.class)
+                    .isInstanceOf(ForbiddenActionException.class)
                     .hasMessageContaining("No tienes acceso");
         }
     }
@@ -269,12 +269,12 @@ class TicketMessageServiceImplTest {
         }
 
         @Test
-        void employeeNotTicketCreator_throwsAccessDeniedException() {
+        void employeeNotTicketCreator_throwsForbiddenActionException() {
             when(authService.getAuthenticatedUser()).thenReturn(otherEmployee);
             when(ticketRepository.findById(10L)).thenReturn(Optional.of(ticket));
 
             assertThatThrownBy(() -> service.createMessage(10L, request))
-                    .isInstanceOf(AccessDeniedException.class)
+                    .isInstanceOf(ForbiddenActionException.class)
                     .hasMessageContaining("Solo el creador del ticket");
 
             verify(ticketMessageRepository, never()).save(any());
