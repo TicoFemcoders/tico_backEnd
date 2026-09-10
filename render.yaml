@@ -1,0 +1,79 @@
+# Render Blueprint — despliega de un solo golpe la base de datos, el backend
+# (este repo, vía Docker) y el frontend (repo tico_frontEnd) usando el
+# soporte de Render para referenciar servicios de otro repositorio.
+#
+# Uso: en el dashboard de Render → New → Blueprint → conectar este repo
+# (tico_backEnd). Render leerá este archivo y creará los 3 recursos.
+#
+# Variables marcadas con `sync: false` no se pueden autocompletar (son
+# secretos o dependen de una URL que solo se conoce tras el primer deploy)
+# y hay que rellenarlas a mano en el dashboard. Ver README.md → "Despliegue
+# en Render" para el detalle de cada una.
+
+databases:
+  - name: tico-db
+    databaseName: tico
+    user: tico
+    plan: free
+
+services:
+  - type: web
+    name: tico-backend
+    runtime: docker
+    repo: https://github.com/TicoFemcoders/tico_backEnd
+    branch: main
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_USERNAME
+        fromDatabase:
+          name: tico-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: tico-db
+          property: password
+      # Render no expone host/puerto sueltos de la base de datos como
+      # propiedad de fromDatabase, y spring.datasource.url necesita el
+      # prefijo jdbc:. Copia el "Internal Database URL" que Render muestra
+      # en la página de tico-db y cambia postgres:// por jdbc:postgresql://
+      - key: DB_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: "86400000"
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      # URL pública del servicio tico-frontend una vez creado, p.ej.
+      # https://tico-frontend.onrender.com
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+  - type: web
+    name: tico-frontend
+    runtime: static
+    repo: https://github.com/TicoFemcoders/tico_frontEnd
+    branch: main
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # URL pública del servicio tico-backend una vez creado, p.ej.
+      # https://tico-backend.onrender.com
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

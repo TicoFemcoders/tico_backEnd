@@ -105,9 +105,21 @@ public class GlobalExceptionHandler {
         return responseBuilder.build(HttpStatus.METHOD_NOT_ALLOWED, "Operación no permitida", null);
     }
 
+    // Lanzada por Spring Security (p. ej. @PreAuthorize) cuando el rol del
+    // propio token no alcanza para el endpoint: el frontend interpreta este
+    // código como sesión/rol desactualizados y fuerza el logout.
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
-        return responseBuilder.build(HttpStatus.FORBIDDEN, "No tienes permiso para realizar esta acción", null);
+        return responseBuilder.build(HttpStatus.FORBIDDEN, "No tienes permiso para realizar esta acción", null,
+                "SESSION_FORBIDDEN");
+    }
+
+    // Lanzada explícitamente por los servicios para una regla de negocio
+    // puntual (p. ej. "no eres el creador de este ticket"): la sesión sigue
+    // siendo válida, así que el frontend solo debe mostrar el mensaje.
+    @ExceptionHandler(ForbiddenActionException.class)
+    public ResponseEntity<Map<String, Object>> handleForbiddenAction(ForbiddenActionException ex) {
+        return responseBuilder.build(HttpStatus.FORBIDDEN, ex.getMessage(), null, "ACTION_FORBIDDEN");
     }
 
     @ExceptionHandler(Exception.class)

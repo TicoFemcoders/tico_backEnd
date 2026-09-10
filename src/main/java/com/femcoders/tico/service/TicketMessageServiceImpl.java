@@ -3,7 +3,6 @@ package com.femcoders.tico.service;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +15,7 @@ import com.femcoders.tico.entity.TicketMessage;
 import com.femcoders.tico.entity.User;
 import com.femcoders.tico.enums.UserRole;
 import com.femcoders.tico.exception.BadRequestException;
+import com.femcoders.tico.exception.ForbiddenActionException;
 import com.femcoders.tico.exception.ResourceNotFoundException;
 import com.femcoders.tico.mapper.TicketMessageMapper;
 import com.femcoders.tico.repository.TicketMessageRepository;
@@ -40,7 +40,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
         if (currentUser.getRoles().contains(UserRole.EMPLOYEE)
                 && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("No tienes acceso a los mensajes de este ticket");
+            throw new ForbiddenActionException("No tienes acceso a los mensajes de este ticket");
         }
         return ticketMessageRepository.findByTicketIdAndRecipientIdIsNullOrderByCreatedAtDesc(ticketId, pageable)
                 .map(ticketMessageMapper::toResponseDTO);
@@ -94,7 +94,7 @@ public class TicketMessageServiceImpl implements TicketMessageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
         if (currentUser.getRoles().contains(UserRole.EMPLOYEE)
                 && !ticket.getCreatedBy().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("Solo el creador del ticket puede responder en él");
+            throw new ForbiddenActionException("Solo el creador del ticket puede responder en él");
         }
         if (currentUser.getRoles().contains(UserRole.ADMIN)
                 && ticket.getAssignedTo() != null

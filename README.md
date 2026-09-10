@@ -298,7 +298,11 @@ MAIL_PASSWORD=tu_contraseña_de_aplicacion_gmail
 ./mvnw spring-boot:run
 ```
 
-Las tablas se crean automáticamente al iniciar mediante Hibernate (`ddl-auto=update`).
+Las tablas se crean automáticamente al iniciar: Flyway aplica la migración inicial
+(`src/main/resources/db/migration/V1__init_schema.sql`) y Hibernate solo valida que las
+entidades coincidan con el esquema (`ddl-auto=validate`), sin alterarlo. Para cambios de
+esquema futuros, añade una nueva migración `V2__...sql` en esa carpeta en vez de dejar que
+Hibernate lo haga automáticamente.
 La API estará disponible en `http://localhost:8080`.
 La documentación Swagger estará en `http://localhost:8080/swagger-ui.html`.
 
@@ -335,6 +339,46 @@ Los tests de integración (`*IT.java`) levantan el **contexto completo de Spring
 | `TicketLifecycleFlowIT`    | Ciclo completo: EMPLOYEE crea (OPEN) → ADMIN asigna (pasa automáticamente a IN_PROGRESS) → ADMIN cierra con mensaje (CLOSED, `closedAt` registrado) → EMPLOYEE reabre (vuelve a IN_PROGRESS); EMPLOYEE no puede asignar ni cerrar (403) |
 | `TicketMessageFlowIT`      | Admin asignado y empleado propietario pueden intercambiar mensajes y ambos quedan persistidos; otro empleado recibe 403; admin no asignado al ticket recibe 400; sin autenticación → 401 |
 | `LabelCreationFlowIT`      | ADMIN crea etiqueta y se persiste activa con el color correcto; EMPLOYEE recibe 403; sin autenticación → 401; formato de color inválido → 400; nombre duplicado → 500 |
+
+---
+
+## 🚀 Despliegue en Render
+
+El proyecto incluye un `Dockerfile` (build multi-stage con Java 21) y un `render.yaml`
+(Blueprint) que despliega en un solo paso la base de datos, este backend y el
+[frontend](https://github.com/TicoFemcoders/tico_frontEnd).
+
+### Opción 1 — Blueprint (recomendado)
+
+1. En el dashboard de Render: **New → Blueprint** → conecta este repositorio (`tico_backEnd`).
+2. Render detecta `render.yaml` y crea 3 recursos: la base de datos `tico-db`, el servicio web
+   `tico-backend` (Docker) y el servicio estático `tico-frontend` (a partir del repo `tico_frontEnd`).
+3. Antes de confirmar el deploy, rellena a mano las variables marcadas como *sync: false*
+   (Render no puede autocompletarlas porque son secretos o dependen de una URL que solo se
+   conoce tras el primer deploy):
+
+   | Variable | De dónde sacarla |
+   | --- | --- |
+   | `DB_URL` | Página de la base de datos `tico-db` → *Internal Database URL*. Cambia el prefijo `postgres://` por `jdbc:postgresql://` (deja host, puerto y nombre de BD tal cual, sin usuario/contraseña en la URL) |
+   | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | Credenciales SMTP (p.ej. una contraseña de aplicación de Gmail) |
+   | `MAIL_FROM` | Email remitente de las notificaciones |
+   | `FRONTEND_URL` y `CORS_ALLOWED_ORIGINS` | URL pública que Render asigna a `tico-frontend`, p.ej. `https://tico-frontend.onrender.com` |
+   | `VITE_API_URL` (en el servicio `tico-frontend`) | URL pública que Render asigna a `tico-backend`, p.ej. `https://tico-backend.onrender.com` |
+
+   `JWT_SECRET` se genera solo (`generateValue: true`). Como el backend y el frontend se crean
+   a la vez, la primera vez tendrás que hacer el deploy, copiar las dos URLs `.onrender.com`
+   resultantes, pegarlas en las variables cruzadas de arriba y volver a desplegar cada servicio
+   una vez desde el dashboard.
+
+### Opción 2 — Servicios manuales
+
+1. **New → PostgreSQL** → crea la base de datos y copia su *Internal Database URL*.
+2. **New → Web Service** → conecta este repo, runtime **Docker** (usa el `Dockerfile` del repo).
+3. Define las variables de entorno de `.env.example` en la pestaña *Environment* (`DB_URL` con
+   prefijo `jdbc:postgresql://`, `JWT_SECRET`, credenciales SMTP, `FRONTEND_URL`,
+   `CORS_ALLOWED_ORIGINS`...). Render inyecta `PORT` automáticamente; la app ya lo respeta
+   (`server.port=${PORT:8080}`).
+4. El health check está en `GET /actuator/health` (configúralo en *Settings → Health Check Path*).
 
 ---
 
